@@ -15,10 +15,7 @@ export default {
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
-  ],
-
-  // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: [
+    '@/assets/css/main.css'
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -35,11 +32,17 @@ export default {
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
     // https://go.nuxtjs.dev/pwa
-    '@nuxtjs/pwa'
+    '@nuxtjs/pwa',
+    // Doc: https://http.nuxtjs.org
+    '@nuxt/http',
+    // https://www.npmjs.com/package/@nuxtjs/toast
+    '@nuxtjs/toast'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
-  axios: {},
+  // axios: {
+  //   baseURL: 'https://hmb-eta.vercel.app'
+  // },
 
   // PWA module configuration: https://go.nuxtjs.dev/pwa
   pwa: {
@@ -48,6 +51,24 @@ export default {
     }
   },
 
+  toast: {
+    position: 'top-right',
+    register: [ // Register custom toasts
+      {
+        name: 'my-error',
+        message: 'Oops...Something went wrong',
+        options: {
+          type: 'error'
+        }
+      }
+    ]
+  },
+
+  router: {
+    middleware: 'redirects'
+  },
+
+  serverMiddleware: ['~/api/index.js'],
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
   }
