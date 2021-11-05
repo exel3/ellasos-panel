@@ -447,6 +447,7 @@ section {
   gap: 2rem 0;
   margin-top: 4rem;
   box-sizing: border-box;
+  height: calc(100vh - 4rem);
 }
 
 article {

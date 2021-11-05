@@ -32,9 +32,9 @@
     <ItemAsideMenu
       title="Que hacer en caso de ..."
       imgsrc="itemList.svg"
-      mainurl="/locals/"
+      mainurl="/content/"
       :options="[
-        { title: 'Contenido', url: '/locals' },
+        { title: 'Contenido', url: '/content' },
       ]"
     />
     <ItemAsideMenu
