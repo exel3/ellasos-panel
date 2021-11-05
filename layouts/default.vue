@@ -21,12 +21,12 @@ export default {
   name: 'DefaultLayout',
   components: {
     AsideMenu,
-    BaseHeader,
+    BaseHeader
   },
   middleware: 'auth',
   data: () => ({
-    showAsideMenu: false,
-  }),
+    showAsideMenu: false
+  })
 }
 </script>
 
@@ -52,7 +52,7 @@ display:none
   top: 4rem;
   width: 100%;
   height: 15rem;
-  background: #2dce89;
+  background: #7060a1;
   z-index: 1;
 }
 }
@@ -60,6 +60,5 @@ display:none
 .containerDefault {
   background: var(--background-color);
 }
-
 
 </style>

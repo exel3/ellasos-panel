@@ -11,7 +11,7 @@
       ></div>
       <div class="header">
         <img />
-        <p>HappyMatch</p>
+        <p>Ella SOS</p>
       </div>
     </div>
     <ItemAsideMenu
@@ -26,8 +26,7 @@
       imgsrc="button.svg"
       mainurl="/users/owners/"
       :options="[
-        { title: 'Dueños', url: '/users/owners' },
-        { title: 'Administradores', url: '/users/admins' },
+        { title: 'Emergencias y policia', url: '/buttons' },
       ]"
     />
     <ItemAsideMenu
@@ -35,8 +34,7 @@
       imgsrc="itemList.svg"
       mainurl="/locals/"
       :options="[
-        { title: 'Bares', url: '/locals' },
-        { title: 'Mesas', url: '/locals/tables' },
+        { title: 'Contenido', url: '/locals' },
       ]"
     />
     <ItemAsideMenu
@@ -47,14 +45,9 @@
       title="Preguntas frecuentes"
       imgsrc="match.svg"
       mainurl="/questions/"
-      :options="
-        user.type === 'admin'
-          ? [
-              { title: 'Preguntas globales', url: '/questions/global' },
-              { title: 'Preguntas locales', url: '/questions/' },
-            ]
-          : [{ title: 'Preguntas locales', url: '/questions/' }]
-      "
+      :options="[
+              { title: 'Contenido', url: '/questions/global' },
+            ]"
     />
     <ItemAsideMenu
       title="Cerrar sesion"
@@ -176,7 +169,7 @@ aside {
 .header {
   display: grid;
   font-size: 1.5rem;
-  color: rgb(65 184 131);
+  color:#7060a1;
   font-weight: bold;
   align-items: center;
   justify-content: center;

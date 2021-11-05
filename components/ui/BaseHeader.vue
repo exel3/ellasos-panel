@@ -17,9 +17,9 @@
 export default {
   name: 'BaseHeader',
   data: () => ({
-    currentU: {},
+    currentU: {}
   }),
-  async fetch() {
+  async fetch () {
     await this.$axios
       .$get('/api/getUser')
       .then((response) => {
@@ -29,10 +29,10 @@ export default {
         this.$toasted.show(`Error recuperando los datos de usuario: ${e}`, {
           theme: 'toasted-primary',
           position: 'top-right',
-          duration: 10000,
+          duration: 10000
         })
       })
-  },
+  }
 }
 </script>
 <style scoped>
@@ -82,7 +82,7 @@ header {
   z-index: 99;
   top: 0;
   user-select: none;
-  background-color: #2dce89;
+  background-color: #7060a1;
   color: white;
   height: 4rem;
 }
