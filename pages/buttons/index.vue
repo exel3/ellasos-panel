@@ -65,7 +65,7 @@ import DeleteModal from '@/components/locals/DeleteModal.vue'
 import EditModal from '@/components/locals/EditModal.vue'
 import Loading from '@/components/ui/Loading.vue'
 export default {
-  name: 'LocalsIndex',
+  name: 'ButtonsIndex',
   components: {
     DeleteModal,
     EditModal,

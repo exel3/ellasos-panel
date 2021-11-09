@@ -74,7 +74,7 @@ export default {
       this.$axios.$post('/api/admin/login', post)
         .then((result) => {
           this.loadingMode = false
-          this.$router.push('locals')
+          this.$router.push('buttons')
         })
         .catch((error) => {
           this.loadingMode = false
