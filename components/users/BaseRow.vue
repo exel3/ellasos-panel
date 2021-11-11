@@ -1,8 +1,7 @@
 <template>
   <tr>
-    <td><p>{{ user.username }}</p></td>
+     <td><p>{{ user.email }}</p></td>
        <td><p>No visible</p></td>
-      <td><p>{{ user.emailAddress }}</p></td>
     <td class="tdOptions">
       <BaseButtonTable
         backcolor="#f7fafc"
@@ -26,14 +25,14 @@ import BaseButtonTable from '@/components/ui/BaseButtonTable.vue'
 export default {
   name: 'BaseRow',
   components: {
-    BaseButtonTable,
+    BaseButtonTable
   },
   props: {
     user: {
       type: Object,
-      required: true,
-    },
-  },
+      required: true
+    }
+  }
 }
 </script>
 <style>

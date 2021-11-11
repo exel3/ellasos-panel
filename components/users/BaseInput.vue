@@ -7,21 +7,17 @@ export default {
   props: {
     valueinput: {
       type: String,
-      default: ""
+      default: ''
     },
-  status: {
-    type:Boolean,
-    required:true
-  }
+    status: {
+      type: Boolean,
+      required: true
+    }
   },
   data: () => ({
-    borderColor:'transparent',
+    borderColor: 'transparent',
     inputBase: 'inputBase'
-  }),
-  methods:{
-    getBorderColor(currentValue){
-     currentValue===''? this.inputBase ='inputBaseAlert' :   this.inputBase = 'inputBase'}
-  }
+  })
 }
 </script>
 <style scoped>
@@ -37,15 +33,15 @@ export default {
     color: black;
      border: 1px solid red;
      border-radius: 0.2rem;
-      background: transparent;
+      background: rgba(0,0,0,0.5);
       height: 100%;
      width: calc(100% - 0.5rem);
 }
-.inputBase:enabled {
+.inputBase {
    border: 1px solid #dee2e6;
    border-radius: 0.2rem;
 }
-  .inputBase:disabled {
-  border: none;
-  }
+.inputBase:disabled {
+    background: rgba(0,0,0,0.1);
+}
 </style>

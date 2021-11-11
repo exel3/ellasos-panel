@@ -20,6 +20,12 @@
       mainurl="/profile"
       :options="[{ title: 'Editar perfil', url: '/profile' }]"
     />
+      <ItemAsideMenu
+      title="Cuentas"
+      imgsrc="group.svg"
+      mainurl="/profile"
+      :options="[{ title: 'Administradores', url: '/users/admins' },{title: 'Usuarios', url:'/users/users'}]"
+    />
     <ItemAsideMenu
       v-if="user.type === 'admin'"
       title="Botones"

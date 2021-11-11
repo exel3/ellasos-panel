@@ -1,38 +1,14 @@
 <template>
   <div class="editModalContainer">
     <div class="editModal">
-      <label>Nombre de usuario:</label>
+      <label>Correo electronico:</label>
       <BaseInput
-        :valueinput="user.username"
-        @input="newUser.username = $event"
+        :valueinput="user.email"
+        :status=true
+        @input="newUser.email = $event"
       />
       <label>Password:</label>
       <BaseInput placeholder="No visible" @input="newUser.password = $event" />
-      <label>Correo electronico:</label>
-      <BaseInput
-        :valueinput="user.emailAddress"
-        @input="newUser.emailAddress = $event"
-      />
-      <div
-        v-if="user.permissionForQuestions !== undefined"
-        class="selectContainer"
-      >
-        <label for="owner">Permiso para editar preguntas:</label>
-        <select
-          id="owner"
-          class="selectOwner"
-          name="owner"
-          @change="setPermission($event.target.value)"
-        >
-          <option :selected="user.permissionForQuestions" value="true">
-            Si
-          </option>
-          <option :selected="!user.permissionForQuestions" value="false">
-            No
-          </option>
-        </select>
-      </div>
-
       <div class="tdOptionsUser">
         <BaseButtonEdit
           backcolor="#5e72e4"
@@ -60,78 +36,52 @@ export default {
   name: 'EditModalUser',
   components: {
     BaseInput,
-    BaseButtonEdit,
+    BaseButtonEdit
   },
   props: {
     user: {
       type: Object,
-      required: true,
-    },
+      required: true
+    }
   },
   data: () => ({
     newUser: {
-      username: '',
       password: '',
-      emailAddress: '',
-      locals: [],
-      permissionForQuestions: false,
-    },
-  }),
-  mounted() {
-    const { username, emailAddress, id, locals, permissionForQuestions } =
-      this.user
-    this.newUser = {
-      username,
-      password: '',
-      emailAddress,
-      id,
-      locals,
-      permissionForQuestions,
+      email: ''
     }
+  }),
+  mounted () {
+    const user = this.user
+    this.newUser = { ...user, password: '' }
   },
   methods: {
-    clickCancel() {
+    clickCancel () {
       this.$emit('cancel:click')
     },
-    setPermission(permission) {
-      const parseEvent = permission === 'true'
-      this.newUser.permissionForQuestions = parseEvent
-    },
-    updateUser() {
-      const regEmailAddress =
+    updateUser () {
+      const regemail =
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      const regUser =
-      /^(?=[a-zA-Z0-9._\u00F1\u00D1]{6,20}$)(?!.*[_.]{2})[^_.].*[^_.]$/
       const regPassword =
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}/
 
-      if (!regUser.test(this.newUser.username)) {
-        this.$toasted.show(
-          `El nombre de usuario debe contener entre 6 y 20 caracteres, y no contener espacios`,
-          {
-            theme: 'toasted-primary',
-            position: 'top-right',
-            duration: 5000,
-          }
-        )
-      } else if (
+      if (
         this.newUser.password !== ''
           ? !regPassword.test(this.newUser.password)
           : false
       ) {
         this.$toasted.show(
-          `La contraseña debe contener mínimo 8 y máximo 16 caracteres, al menos una letra mayúscula, una letra minúscula, un número, un carácter especial y no contener espacios`,
+          'La contraseña debe contener mínimo 8 y máximo 16 caracteres, al menos una letra mayúscula, una letra minúscula, un número, un carácter especial y no contener espacios',
           {
             theme: 'toasted-primary',
             position: 'top-right',
-            duration: 10000,
+            duration: 10000
           }
         )
-      } else if (!regEmailAddress.test(this.newUser.emailAddress)) {
-        this.$toasted.show(`Formato de email incorrecto`, {
+      } else if (!regemail.test(this.newUser.email)) {
+        this.$toasted.show('Formato de email incorrecto', {
           theme: 'toasted-primary',
           position: 'top-right',
-          duration: 5000,
+          duration: 5000
         })
       } else {
         if (this.newUser.password === '') {
@@ -139,8 +89,8 @@ export default {
         }
         this.$emit('update:user', this.newUser)
       }
-    },
-  },
+    }
+  }
 }
 </script>
 <style scoped>
