@@ -191,6 +191,13 @@ export default {
           duration: 5000
         })
         this.loadingMode = false
+      } else if (!new) {
+        this.$toasted.show('Seleccione un pais', {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000
+        })
+        this.loadingMode = false
       } else {
         const { email, password, namesAndSurname } = this.newUser
         const countrySelected = this.countrySelected
