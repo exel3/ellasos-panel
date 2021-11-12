@@ -9,7 +9,7 @@
       <div class="profile">
         <img src="@/assets/images/default-profile.png" />
       </div>
-      <p>{{ currentU.username }}</p>
+      <p>{{ currentU.email }}</p>
     </nuxt-link>
   </header>
 </template>

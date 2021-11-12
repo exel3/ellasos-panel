@@ -68,23 +68,26 @@
 <tr>
 <th>Email</th>
 <th>Contraseña</th>
-    <th>Opciones</th>
+<th>Nombre</th>
+<th>Pais</th>
+<th>Opciones</th>
 </tr>
 </thead>
 <tbody>
-<BaseRow v-for="user in tableFilter"
-:key="user.id"
+<BaseRow v-for="admin in tableFilter"
+:key="admin.id"
+:admin="admin"
 :user="user"
-@click="showDeleteModal = true; userSelected = user"
-@click:delete="showDeleteModal=true; userSelected=user"
-@click:edit="showEditModal=true; userSelected=user"
+@click="showDeleteModal = true; userSelected = admin"
+@click:delete="showDeleteModal=true; userSelected=admin"
+@click:edit="showEditModal=true; userSelected=admin"
 />
 </tbody>
 
 </table>
   </div>
     </article>
-    <EditModal v-if="showEditModal" :user="userSelected" @click:cancel="showEditModal=false" @update:user="updateUser($event); showEditModal=false" @cancel:click="showEditModal=false"  />
+    <EditModal v-if="showEditModal" :user="userSelected" :countries="countries" @click:cancel="showEditModal=false" @update:user="updateUser($event); showEditModal=false" @cancel:click="showEditModal=false"  />
     <DeleteModal v-if="showDeleteModal" @delete:user="deleteUser" @cancel:delete="showDeleteModal = false"/>
   </section>
 </template>
@@ -102,15 +105,17 @@ export default {
     Loading
   },
   data: () => ({
+    user: {},
     currentUsers: [],
     userSelected: {},
-    newUser: { namesAndSurname: '', email: '', password: '', id: null },
+    newUser: { namesAndSurname: '', email: '', password: '', id: null, avatar: null },
     showDeleteModal: false,
     showEditModal: false,
     searchValue: '',
     countries: [],
     tableFilter: [],
-    loadingMode: false
+    loadingMode: false,
+    countrySelected: {}
   }),
   async fetch () {
     await this.$axios
@@ -119,9 +124,19 @@ export default {
         this.currentUsers = response.admins
         this.tableFilter = response.admins
         this.$axios.$get('/api/getAllCountries')
-          .then((response) => {
+          .then(async (response) => {
             this.countries = response.countries
-            console.log(this.countries)
+            await this.$axios.$get('/api/getUser')
+              .then((response) => {
+                this.user = response
+              })
+              .catch((e) => {
+                this.$toasted.show(`Error al recuperar el usuario actual: ${e}`, {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 10000
+                })
+              })
           })
           .catch((e) => {
             this.$toasted.show(`Error al recuperar los paises: ${e}`, {
@@ -165,15 +180,15 @@ export default {
           (u.email ? u.email.toLowerCase().includes(this.searchValue.toLowerCase()) : false)
       )
     },
-    setCountrySelected (ownerName) {
-      this.countrySelected = this.countries.find((o) => ownerName === o.username)
+    setCountrySelected (countryName) {
+      this.countrySelected = this.countries.find((o) => countryName === o.name)
     },
     addNewUser () {
       this.loadingMode = true
       const regemail =
        /^[\w-.]+@([\w-]+.)+[\w-]{2,4}$/
       const regPassword =
-      /^(?=.[a-z])(?=.[A-Z])(?=.\d)(?=.[@$!%?&])[A-Za-z\d@$!%?&]{8,16}/
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}/
       if (!regPassword.test(this.newUser.password)) {
         this.$toasted.show(
           'La contraseña debe contener mínimo 8 y máximo 16 caracteres, al menos una letra mayúscula, una letra minúscula, un número, un carácter especial y no contener espacios',
@@ -191,7 +206,7 @@ export default {
           duration: 5000
         })
         this.loadingMode = false
-      } else if (!new) {
+      } else if (!this.countrySelected) {
         this.$toasted.show('Seleccione un pais', {
           theme: 'toasted-primary',
           position: 'top-right',
@@ -199,9 +214,9 @@ export default {
         })
         this.loadingMode = false
       } else {
-        const { email, password, namesAndSurname } = this.newUser
-        const countrySelected = this.countrySelected
-        const body = { namesAndSurname, email, password, countrySelected }
+        const { email, password, namesAndSurname, avatar } = this.newUser
+        const country = this.countrySelected.id
+        const body = { namesAndSurname, email, password, country, avatar }
         this.$toasted.show('Guardando cambios..', {
           theme: 'toasted-primary',
           position: 'top-right',
@@ -257,6 +272,7 @@ export default {
       this.loadingMode = true
       const AdminID = userC.id
       const body = { ...userC }
+      console.log(body)
       this.$axios
         .$put(`/api/updateAdmin/${AdminID}`, body)
         .then((res) => {

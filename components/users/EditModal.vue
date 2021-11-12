@@ -9,6 +9,21 @@
       />
       <label>Password:</label>
       <BaseInput placeholder="No visible" @input="newUser.password = $event" />
+         <label>Nombre y apellido:</label>
+      <BaseInput :valueinput="user.namesAndSurname" @input="newUser.namesAndSurname = $event" />
+ <div class="selectContainer">
+          <label for="owner">Pais</label>
+        <select id="owner" class="selectOwner" name="owner"  @change="setCountrySelected($event.target.value)">
+           <option disabled selected value></option>
+          <option
+            v-for="country in countries"
+            :key="'dropBox' + country.id"
+            :value="country.name"
+          >
+            {{country.name}}
+          </option>
+        </select>
+          </div>
       <div class="tdOptionsUser">
         <BaseButtonEdit
           backcolor="#5e72e4"
@@ -42,13 +57,20 @@ export default {
     user: {
       type: Object,
       required: true
+    },
+    countries: {
+      type: Array,
+      required: true
     }
   },
   data: () => ({
     newUser: {
       password: '',
-      email: ''
-    }
+      email: '',
+      namesAndSurname: '',
+      country: ''
+    },
+    countrySelected: {}
   }),
   mounted () {
     const user = this.user
@@ -57,6 +79,9 @@ export default {
   methods: {
     clickCancel () {
       this.$emit('cancel:click')
+    },
+    setCountrySelected (countryName) {
+      this.countrySelected = this.countries.find((o) => countryName === o.name)
     },
     updateUser () {
       const regemail =
@@ -87,6 +112,10 @@ export default {
         if (this.newUser.password === '') {
           this.newUser.password = this.user.password
         }
+        if (this.newUser.namesAndSurname === '') {
+          this.newUser.namesAndSurname = this.user.namesAndSurname
+        }
+        if (this.newUser.country) { this.newUser.country = this.countrySelected.id }
         this.$emit('update:user', this.newUser)
       }
     }

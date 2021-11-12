@@ -146,10 +146,8 @@ app.post('/createNewAdmin', (req, res) => {
     headers:
       { authorization: token }
   }
-  const data = {
-    email: body.email,
-    password: body.password
-  }
+  const data = { ...body }
+  console.log(data)
 
   axios.post('https://ellasos.herokuapp.com/api/admins/register', data, headers)
     .then(
@@ -158,6 +156,7 @@ app.post('/createNewAdmin', (req, res) => {
       }
     )
     .catch(e => {
+      console.log(e)
       res.statusCode = e.response.status
       res.json({
         error: e.response.data
@@ -174,7 +173,6 @@ app.put('/updateAdmin/:adminID', (req, res) => {
       { authorization: token }
   }
   const data = { namesAndSurname, password, country, avatar }
-  console.log(data)
 
   axios.put(`https://ellasos.herokuapp.com/api/admins/update/${adminID}`, data, headers)
     .then(
@@ -217,8 +215,8 @@ app.post('/admin/login', (req, res) => {
   axios.post('https://ellasos.herokuapp.com/api/admins/login', post)
     .then(response => {
       const { token, admin } = response.data
-      const { id, email } = admin
-      const dataAdmin = { id, email, type: 'admin' }
+      const { id, email, isMain } = admin
+      const dataAdmin = { id, email, isMain }
       const cookies = new Cookies(req, res)
       if (token) {
         cookies.set('token', 'Bearer ' + token, {
@@ -243,12 +241,15 @@ app.post('/admin/login', (req, res) => {
       })
     })
 })
-app.post('/getAllTablesByClientAndLocal/:clientID/:localID/:page', (req, res) => {
-  const { clientID, localID, page } = req.params
+app.post('/createNewQuestion', (req, res) => {
+  const body = req.body
   const token = getToken(req, res)
-  const get = { headers: { Authorization: token } }
-  const bodyGet = req.body
-  axios.post(`https://ellasos.herokuapp.com/api/table/getAllTables/filter/client/${clientID}/local/${localID}/page/${page}`, bodyGet, get)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = { ...body }
+  axios.post('https://ellasos.herokuapp.com/api/questions/create', data, headers)
     .then(
       response => {
         res.json(response.data)
@@ -257,7 +258,49 @@ app.post('/getAllTablesByClientAndLocal/:clientID/:localID/:page', (req, res) =>
     .catch(e => {
       res.statusCode = e.response.status
       res.json({
-        error: e.message
+        error: e.response.data
+      })
+    })
+})
+app.put('/updateQuestion/:questionID', (req, res) => {
+  const { questionID } = req.params
+  const { question, content } = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = { question, content }
+  axios.put(`https://ellasos.herokuapp.com/api/questions/update/${questionID}`, data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
+    })
+})
+app.delete('/deleteQuestion/:questionID', (req, res) => {
+  const { questionID } = req.params
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  axios.delete(`https://ellasos.herokuapp.com/api/questions/delete/${questionID}`, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
       })
     })
 })

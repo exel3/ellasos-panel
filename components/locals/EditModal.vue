@@ -59,12 +59,12 @@ export default {
   name: 'EditModalTables',
   components: {
     BaseInput,
-    BaseButtonEdit,
+    BaseButtonEdit
   },
   props: {
     local: {
       type: Object,
-      required: true,
+      required: true
     },
     owners: {
       type: Array,
@@ -76,9 +76,9 @@ export default {
     }
   },
   data: () => ({
-    newlocal: {},
+    newlocal: {}
   }),
-  mounted() {
+  mounted () {
     this.newlocal.locationAddress = this.local.location_address
     this.newlocal.locationCityName = this.local.location_city_name
     this.newlocal.locationCountryName = this.local.location_country_name
@@ -86,39 +86,38 @@ export default {
     this.newlocal.name = this.local.name
     this.newlocal.clientID = this.local.client
     this.newlocal.clientName = this.local.clientName
-   
   },
   methods: {
-    clickCancel() {
+    clickCancel () {
       this.$emit('cancel:click')
     },
-      setOwnerSelected(ownerName) {
+    setOwnerSelected (ownerName) {
       this.newlocal.clientID = this.owners.find(o => ownerName === o.username).id
     },
-    updateEditLocal() {
+    updateEditLocal () {
       if (this.newlocal.name.length < 1) {
-        this.$toasted.show(`El nombre no puede estar vacio`, {
+        this.$toasted.show('El nombre no puede estar vacio', {
           theme: 'toasted-primary',
           position: 'top-right',
-          duration: 5000,
+          duration: 5000
         })
       } else if (this.newlocal.locationAddress.length < 0) {
-        this.$toasted.show(`La direccion no puede estar vacia`, {
+        this.$toasted.show('La direccion no puede estar vacia', {
           theme: 'toasted-primary',
           position: 'top-right',
-          duration: 5000,
+          duration: 5000
         })
-        } else if (this.newlocal.clientName.length < 0) {
-        this.$toasted.show(`El dueño no puede estar vacio`, {
+      } else if (this.newlocal.clientName.length < 0) {
+        this.$toasted.show('El dueño no puede estar vacio', {
           theme: 'toasted-primary',
           position: 'top-right',
-          duration: 5000,
+          duration: 5000
         })
       } else {
         this.$emit('update:local', this.newlocal)
       }
-    },
-  },
+    }
+  }
 }
 </script>
 <style scoped>

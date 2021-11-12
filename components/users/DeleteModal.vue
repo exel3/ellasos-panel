@@ -18,7 +18,7 @@
 </template>
 <script>
 export default {
-  name: 'DeleteModal',
+  name: 'DeleteModal'
 }
 </script>
 <style scoped>

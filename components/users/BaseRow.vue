@@ -1,8 +1,10 @@
 <template>
   <tr>
-     <td><p>{{ user.email }}</p></td>
+     <td><p>{{ admin.email }}</p></td>
        <td><p>No visible</p></td>
-    <td class="tdOptions">
+           <td><p>{{ admin.namesAndSurname }}</p></td>
+           <td><p>{{ admin.country.name }}</p></td>
+    <td v-if="user.isMain" class="tdOptions">
       <BaseButtonTable
         backcolor="#f7fafc"
         bordercolor="#f7fafc"
@@ -15,7 +17,7 @@
         backcolor="#f5365c"
         bordercolor="#f5365c"
         imgsrc="delete.svg"
-        @click="$emit('click:delete', user)"
+        @click="$emit('click:delete', admin)"
       />
     </td>
   </tr>
@@ -28,6 +30,10 @@ export default {
     BaseButtonTable
   },
   props: {
+    admin: {
+      type: Object,
+      required: true
+    },
     user: {
       type: Object,
       required: true

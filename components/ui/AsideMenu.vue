@@ -21,13 +21,20 @@
       :options="[{ title: 'Editar perfil', url: '/profile' }]"
     />
       <ItemAsideMenu
+          v-if="user.isMain"
       title="Cuentas"
       imgsrc="group.svg"
       mainurl="/profile"
       :options="[{ title: 'Administradores', url: '/users/admins' },{title: 'Usuarios', url:'/users/users'}]"
     />
+          <ItemAsideMenu
+      v-else
+      title="Cuentas"
+      imgsrc="group.svg"
+      mainurl="/profile"
+      :options="[{title: 'Usuarios', url:'/users/users'}]"
+    />
     <ItemAsideMenu
-      v-if="user.type === 'admin'"
       title="Botones"
       imgsrc="button.svg"
       mainurl="/users/owners/"
@@ -44,10 +51,6 @@
       ]"
     />
     <ItemAsideMenu
-      v-if="
-        user.type === 'admin' ||
-        (user.permissionForQuestions && user.permissionForQuestions === true)
-      "
       title="Preguntas frecuentes"
       imgsrc="match.svg"
       mainurl="/questions/"
