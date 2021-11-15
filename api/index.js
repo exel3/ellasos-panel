@@ -304,6 +304,85 @@ app.delete('/deleteQuestion/:questionID', (req, res) => {
       })
     })
 })
+app.get('/getAllButtons', (req, res) => {
+  const token = getToken(req, res)
+  const get = { headers: { Authorization: token } }
+  axios.get('https://ellasos.herokuapp.com/api/buttons/findAllButtons', get)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
+    })
+})
+app.post('/createNewButton', (req, res) => {
+  const body = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = { ...body }
+  axios.post('https://ellasos.herokuapp.com/api/buttons/register', data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
+    })
+})
+app.put('/updateButton/:buttonID', (req, res) => {
+  const { buttonID } = req.params
+  const { question, content } = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = { question, content }
+  axios.put(`https://ellasos.herokuapp.com/api/buttons/update/${buttonID}`, data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
+    })
+})
+app.delete('/deleteButton/:buttonID', (req, res) => {
+  const { buttonID } = req.params
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  axios.delete(`https://ellasos.herokuapp.com/api/buttons/delete/${buttonID}`, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
+    })
+})
 app.get('/getUser', (req, res) => {
   const user = getUser(req, res)
   res.json(user)
