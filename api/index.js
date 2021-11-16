@@ -173,7 +173,8 @@ app.put('/updateAdmin/:adminID', (req, res) => {
       { authorization: token }
   }
   const data = { namesAndSurname, password, country, avatar }
-
+  console.log(adminID)
+  console.log(data)
   axios.put(`https://ellasos.herokuapp.com/api/admins/update/${adminID}`, data, headers)
     .then(
       response => {
@@ -215,8 +216,8 @@ app.post('/admin/login', (req, res) => {
   axios.post('https://ellasos.herokuapp.com/api/admins/login', post)
     .then(response => {
       const { token, admin } = response.data
-      const { id, email, isMain } = admin
-      const dataAdmin = { id, email, isMain }
+      const { id, email, isMain, country } = admin
+      const dataAdmin = { id, email, isMain, country }
       const cookies = new Cookies(req, res)
       if (token) {
         cookies.set('token', 'Bearer ' + token, {
@@ -328,6 +329,7 @@ app.post('/createNewButton', (req, res) => {
       { authorization: token }
   }
   const data = { ...body }
+  console.log(data)
   axios.post('https://ellasos.herokuapp.com/api/buttons/register', data, headers)
     .then(
       response => {

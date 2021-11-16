@@ -272,6 +272,7 @@ export default {
       this.loadingMode = true
       const AdminID = userC.id
       const body = { ...userC }
+      body.avatar = !body.avatar && ''
       console.log(body)
       this.$axios
         .$put(`/api/updateAdmin/${AdminID}`, body)

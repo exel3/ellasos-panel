@@ -11,7 +11,7 @@
       <BaseInput placeholder="No visible" @input="newUser.password = $event" />
          <label>Nombre y apellido:</label>
       <BaseInput :valueinput="user.namesAndSurname" @input="newUser.namesAndSurname = $event" />
- <div class="selectContainer">
+ <div v-if="user.isMain" class="selectContainer">
           <label for="owner">Pais</label>
         <select id="owner" class="selectOwner" name="owner"  @change="setCountrySelected($event.target.value)">
            <option disabled selected value></option>
@@ -110,12 +110,14 @@ export default {
         })
       } else {
         if (this.newUser.password === '') {
-          this.newUser.password = this.user.password
+          this.newUser.password = null
         }
         if (this.newUser.namesAndSurname === '') {
-          this.newUser.namesAndSurname = this.user.namesAndSurname
+          this.newUser.namesAndSurname = null
         }
-        if (this.newUser.country) { this.newUser.country = this.countrySelected.id }
+        if (this.newUser.country) { this.newUser.country = this.countrySelected.id } else {
+          this.newUser.country = this.user.country
+        }
         this.$emit('update:user', this.newUser)
       }
     }

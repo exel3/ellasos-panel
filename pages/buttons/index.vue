@@ -2,6 +2,15 @@
 <Loading v-if="$fetchState.pending" class="fetchState" />
   <p v-else-if="$fetchState.error" class="fetchState">Error al cargar los datos</p>
   <section v-else>
+    <article v-if="user.isMain" class="newlocal">
+          <div class="selectContainer">
+          <label for="owner">Pais</label>
+   <select id="owner" class="selectOwner" name="owner" @change="setCountrySelected($event.target.value)">
+             <option disabled selected value>Seleccione pais..</option>
+               <option  v-for="country in countries" :key="country.id" :value="country.name">{{country.name}}</option>
+        </select>
+          </div>
+    </article>
     <article class="newlocal">
       <div class="titleCard"><p>Boton emergencia medica</p></div>
       <div class="contentCard">
@@ -14,15 +23,6 @@
           <label for="contraseña">Telefono</label>
           <input id="contraseña" v-model="emergencyNum.phone" type="text"  :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="emergencyNumInitial.phone? updateButton('emergency') : addButton('emergency')">
           </div>
-           <div>
-          <div class="selectContainer">
-          <label for="owner">Pais</label>
-   <select id="owner" class="selectOwner" name="owner" @change="setCountrySelected($event.target.value)">
-             <option disabled selected value>Seleccione pais..</option>
-               <option  v-for="country in countries" :key="country.id + 'police'" :value="country.name">{{country.name}}</option>
-        </select>
-          </div>
-          </div>
         </form>
       </div>
       <div class="containerAddBtn">
@@ -30,7 +30,7 @@
       </div>
     </article>
       <article class="newlocal">
-      <div class="titleCard"><p>Boton 911 Policia</p></div>
+      <div class="titleCard"><p>Boton Policia</p></div>
       <div class="contentCard">
         <form>
           <div>
@@ -41,23 +41,14 @@
           <label for="contraseña">Telefono</label>
           <input id="contraseña" v-model="policeNum.phone" type="text"  :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="policeNumInitial.phone? updateButton('police') : addButton('police')">
           </div>
-           <div>
-          <div v-if="user.isMain" class="selectContainer">
-          <label for="owner">Pais</label>
-        <select id="owner" class="selectOwner" name="owner" @change="setCountrySelected($event.target.value)">
-             <option disabled selected value>Seleccione pais..</option>
-               <option  v-for="country in countries" :key="country.id + 'police'" :value="country.name">{{country.name}}</option>
-        </select>
-          </div>
-          </div>
         </form>
       </div>
       <div class="containerAddBtn">
         <button :disabled="loadingMode" @click.prevent="policeNumInitial.phone? updateButton('police') : addButton('police')">{{policeNumInitial.phone? 'Modificar' : 'Agregar'}}</button>
       </div>
     </article>
-    <EditModal v-if="showEditModal" :local="localSelected" :countries="countries" :user="user" @click:cancel="showEditModal=false" @update:local="updateLocal($event); showEditModal=false" @cancel:click="showEditModal=false"  />
-    <DeleteModal v-if="showDeleteModal" @delete:local="deletelocal" @cancel:delete="showDeleteModal = false"/>
+    <EditModal v-if="showEditModal" :local="buttonSelected" :countries="countries" :user="user" @click:cancel="showEditModal=false" @update:local="updateButton($event); showEditModal=false" @cancel:click="showEditModal=false"  />
+    <DeleteModal v-if="showDeleteModal" @delete:local="deleteButton" @cancel:delete="showDeleteModal = false"/>
   </section>
 </template>
 <script>
@@ -76,18 +67,11 @@ export default {
     countries: [],
     countrySelected: {},
     currentButtons: [],
-    localSelected: {},
+    buttonSelected: {},
     emergencyNum: {},
     emergencyNumInitial: {},
     policeNum: {},
     policeNumInitial: {},
-    newlocal: {
-      name: '',
-      locationAddress: '',
-      locationCityName: '',
-      locationCountryName: '',
-      id: null
-    },
     showDeleteModal: false,
     showEditModal: false,
     searchValue: '',
@@ -117,12 +101,14 @@ export default {
                 })
               this.currentButtons = response.buttons
               this.tableFilter = response.buttons
-              this.policeNum = [...response.buttons].find(n => n.name === '911')
-              this.policeNumInitial = { ...this.policeNum }
-              this.emergencyNum = [...response.buttons].find(n => n.name === 'emergency')
-              this.emergencyNumInitial = { ...this.emergencyNumInitial }
-              if (!this.policeNum) { this.policeNum = {} }
-              if (!this.emergencyNum) { this.emergencyNum = {} }
+              if (!this.user.isMain) {
+                this.policeNum = [...response.buttons].find(n => n.name === 'police')
+                this.emergencyNum = [...response.buttons].find(n => n.name === 'emergency')
+                if (!this.policeNum) { this.policeNum = {} }
+                if (!this.emergencyNum) { this.emergencyNum = {} }
+                this.policeNumInitial = { ...this.policeNum }
+                this.emergencyNumInitial = { ...this.emergencyNum }
+              }
             })
             .catch((e) => {
               this.$toasted.show(`Error al recuperar botones: ${e}`, {
@@ -206,76 +192,104 @@ export default {
     },
     setCountrySelected (countryName) {
       this.countrySelected = this.countries.find((o) => countryName === o.name)
+      const buttonsByCounty = this.currentButtons.filter(b => b.country.id === this.countrySelected.id)
+      this.policeNum = [...buttonsByCounty].find(n => n.name === 'police')
+      this.emergencyNum = [...buttonsByCounty].find(n => n.name === 'emergency')
+      if (!this.policeNum) { this.policeNum = {} }
+      if (!this.emergencyNum) { this.emergencyNum = {} }
+      this.policeNumInitial = { ...this.policeNum }
+      this.emergencyNumInitial = { ...this.emergencyNum }
     },
     validateNum (tel) {
-      const regTel =
-       /^\D?(\d{3})\D?\D?(\d{3})\D?(\d{4})$/
-      if (regTel.test(tel)) {
-        this.$toasted.show('Numero de telefono incorrecto', {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000
-        })
-        return true
-      } else {
-        return false
-      }
-    },
-    addButton (type) {
-      this.user.type === 'client' && (this.countrySelected.id = this.user.id)
-      let body = {}
-      if (type === 'police') {
-        body = {
-          name: '911',
-          phone: this.policeNum.phone,
-          country: this.countrySelected.id,
-          message: 'Emergencia policial'
-        }
-      } else {
-        body = {
-          name: 'emergency',
-          phone: this.emergencyNum.phone,
-          country: this.countrySelected.id,
-          message: 'Emergencia medica'
-        }
-      }
-      this.$toasted.show('Guardando cambios..', {
-        theme: 'toasted-primary',
-        position: 'top-right',
-        duration: 5000
-      })
-      this.$axios
-        .$post('/api/createNewButton', body)
-        .then((res) => {
-          this.tableFilter.push(res.local)
-          this.$toasted.show('Cambios guardados', {
+      if (this.user.isMain) {
+        if (!this.countrySelected.id) {
+          this.$toasted.show('Seleccione pais', {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 5000
           })
-          this.loadingMode = false
-        })
-        .catch((e) => {
-          if (
-            JSON.stringify(e.response.data.error['Errors List']) ===
-              '[{"invalid name":"Name is already in use"}]'
-          ) {
-            this.$toasted.show('ERROR: Nombre de local en uso', {
+          return false
+        } else {
+          const regTel =
+       /^\d{3,}$/
+          if (!regTel.test(tel)) {
+            this.$toasted.show('Numero de telefono incorrecto', {
               theme: 'toasted-primary',
               position: 'top-right',
-              duration: 10000
+              duration: 5000
             })
-          } else if (
-            JSON.stringify(e.response.data.error['Errors List']) ===
-              '{"locationAddress error":"locationAddress in use"}'
-          ) {
-            this.$toasted.show('ERROR: Email en uso', {
-              theme: 'toasted-primary',
-              position: 'top-right',
-              duration: 10000
-            })
+            return false
           } else {
-            this.$toasted.show(
+            return true
+          }
+        }
+      }
+    },
+    addButton (type) {
+      let validacion = false
+      let countryID = this.user.country
+      if (!this.user.isMain) {
+        countryID = this.countrySelected.id
+      }
+      if (type === 'police') {
+        validacion = this.validateNum(this.policeNum.phone)
+      } else {
+        validacion = this.validateNum(this.emergencyNum.phone)
+      }
+      if (validacion) {
+        let body = {}
+        if (type === 'police') {
+          body = {
+            name: 'police',
+            phone: this.policeNum.phone,
+            country: countryID,
+            message: 'Emergencia policial'
+          }
+        } else {
+          body = {
+            name: 'emergency',
+            phone: this.emergencyNum.phone,
+            country: countryID,
+            message: 'Emergencia medica'
+          }
+        }
+        this.$toasted.show('Guardando cambios..', {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000
+        })
+        this.$axios
+          .$post('/api/createNewButton', body)
+          .then((res) => {
+            this.tableFilter.push(res.local)
+            this.$toasted.show('Cambios guardados', {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000
+            })
+            this.loadingMode = false
+          })
+          .catch((e) => {
+            if (
+              JSON.stringify(e.response.data.error['Errors List']) ===
+              '[{"invalid name":"Name is already in use"}]'
+            ) {
+              this.$toasted.show('ERROR: Nombre de local en uso', {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 10000
+              })
+            } else if (
+              JSON.stringify(e.response.data.error['Errors List']) ===
+              '{"locationAddress error":"locationAddress in use"}'
+            ) {
+              this.$toasted.show('ERROR: Email en uso', {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 10000
+              })
+            } else {
+              this.$toasted.show(
                 `Error al crear boton: ${JSON.stringify(
                   e.response.data.error['Errors List']
                 )}`,
@@ -284,51 +298,80 @@ export default {
                   position: 'top-right',
                   duration: 5000
                 }
-            )
-          }
-          this.loadingMode = false
-        })
-    },
-    updateLocal (localC) {
-      this.loadingMode = true
-      const localID = localC.id
-      const body = localC
-      this.$axios
-        .$put(`/api/updateLocal/${localID}`, body)
-        .then((res) => {
-          this.$toasted.show('Cambios guardados', {
-            theme: 'toasted-primary',
-            position: 'top-right',
-            duration: 5000
+              )
+            }
+            this.loadingMode = false
           })
-          const indexT = this.currentButtons.findIndex(
-            (t) => t.id === res.local.id
-          )
-          this.tableFilter[indexT] = res.local
-          this.currentButtons = this.tableFilter
-          this.loadingMode = false
-        })
-        .catch((e) => {
-          if (
-            JSON.stringify(e.response.data.error['Errors List']) ===
+      }
+    },
+    updateButton (type) {
+      let validacion = false
+      let countryID = this.user.country
+      if (!this.user.isMain) {
+        countryID = this.countrySelected.id
+      }
+      if (type === 'police') {
+        validacion = this.validateNum(this.policeNum.phone)
+      } else {
+        validacion = this.validateNum(this.emergencyNum.phone)
+      }
+      if (validacion) {
+        this.loadingMode = true
+        let body = {}
+        let buttonID = ''
+        if (type === 'police') {
+          body = {
+            name: 'police',
+            phone: this.policeNum.phone,
+            country: countryID,
+            message: 'Emergencia policial'
+          }
+          buttonID = this.policeNum.id
+        } else {
+          body = {
+            name: 'emergency',
+            phone: this.emergencyNum.phone,
+            country: countryID,
+            message: 'Emergencia medica'
+          }
+          buttonID = this.emergencyNum.id
+        }
+        this.$axios
+          .$put(`/api/updateButton/${buttonID}`, body)
+          .then((res) => {
+            this.$toasted.show('Cambios guardados', {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000
+            })
+            const indexT = this.currentButtons.findIndex(
+              (t) => t.id === res.button.id
+            )
+            this.tableFilter[indexT] = res.button
+            this.currentButtons = this.tableFilter
+            this.loadingMode = false
+          })
+          .catch((e) => {
+            if (
+              JSON.stringify(e.response.data.error['Errors List']) ===
             '[{"invalid name":"Name is already in use"}]'
-          ) {
-            this.$toasted.show('ERROR: Nombre de usuario en uso', {
-              theme: 'toasted-primary',
-              position: 'top-right',
-              duration: 10000
-            })
-          } else if (
-            JSON.stringify(e.response.data.error['Errors List']) ===
+            ) {
+              this.$toasted.show('ERROR: Nombre de usuario en uso', {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 10000
+              })
+            } else if (
+              JSON.stringify(e.response.data.error['Errors List']) ===
             '{"locationAddress error":"locationAddress in use"}'
-          ) {
-            this.$toasted.show('ERROR: Email en uso', {
-              theme: 'toasted-primary',
-              position: 'top-right',
-              duration: 10000
-            })
-          } else {
-            this.$toasted.show(
+            ) {
+              this.$toasted.show('ERROR: Email en uso', {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 10000
+              })
+            } else {
+              this.$toasted.show(
               `Error al actualizar local: ${JSON.stringify(
                 e.response.data.error['Errors List']
               )}`,
@@ -337,16 +380,17 @@ export default {
                 position: 'top-right',
                 duration: 5000
               }
-            )
-          }
-          this.loadingMode = false
-        })
+              )
+            }
+            this.loadingMode = false
+          })
+      }
     },
-    deletelocal () {
+    deleteButton () {
       this.loadingMode = true
-      const localID = this.localSelected.id
+      const buttonID = this.buttonSelected.id
       this.$axios
-        .$delete(`/api/deleteLocal/${localID}`)
+        .$delete(`/api/deleteButton/${buttonID}`)
         .then((res) => {
           this.$toasted.show('Cambios guardados', {
             theme: 'toasted-primary',
@@ -354,7 +398,7 @@ export default {
             duration: 5000
           })
           this.currentButtons = this.currentButtons.filter(
-            (u) => u.id !== this.localSelected.id
+            (u) => u.id !== this.buttonSelected.id
           )
           this.showDeleteModal = false
           this.tableFilter = this.currentButtons
@@ -415,9 +459,7 @@ export default {
   th {
     padding: 0.5rem;
   }
-  .newlocal {
-    max-height: 15rem;
-  }
+
   .titleCard {
     display: grid;
     grid-auto-flow: column;
@@ -437,7 +479,7 @@ section {
   gap: 2rem 0;
   margin-top: 4rem;
   box-sizing: border-box;
-  height: calc(100vh - 4rem);
+  height: calc(100vh - 10rem);
 }
 
 article {
@@ -496,6 +538,10 @@ article {
   border-radius: 0.25rem;
   box-shadow: 0 3px 2px rgb(233 236 239 / 5%);
   box-sizing: border-box;
+}
+
+.selectContainer {
+  padding: 1rem;
 }
 
 label {
