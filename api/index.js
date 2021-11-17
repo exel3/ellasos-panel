@@ -345,13 +345,14 @@ app.post('/createNewButton', (req, res) => {
 })
 app.put('/updateButton/:buttonID', (req, res) => {
   const { buttonID } = req.params
-  const { question, content } = req.body
   const token = getToken(req, res)
   const headers = {
     headers:
       { authorization: token }
   }
-  const data = { question, content }
+  const data = { ...req.body }
+  console.log(buttonID)
+  console.log(data)
   axios.put(`https://ellasos.herokuapp.com/api/buttons/update/${buttonID}`, data, headers)
     .then(
       response => {

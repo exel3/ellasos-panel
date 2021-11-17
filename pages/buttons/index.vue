@@ -306,10 +306,6 @@ export default {
     },
     updateButton (type) {
       let validacion = false
-      let countryID = this.user.country
-      if (!this.user.isMain) {
-        countryID = this.countrySelected.id
-      }
       if (type === 'police') {
         validacion = this.validateNum(this.policeNum.phone)
       } else {
@@ -321,18 +317,12 @@ export default {
         let buttonID = ''
         if (type === 'police') {
           body = {
-            name: 'police',
-            phone: this.policeNum.phone,
-            country: countryID,
-            message: 'Emergencia policial'
+            phone: this.policeNum.phone
           }
           buttonID = this.policeNum.id
         } else {
           body = {
-            name: 'emergency',
-            phone: this.emergencyNum.phone,
-            country: countryID,
-            message: 'Emergencia medica'
+            phone: this.emergencyNum.phone
           }
           buttonID = this.emergencyNum.id
         }
@@ -372,7 +362,7 @@ export default {
               })
             } else {
               this.$toasted.show(
-              `Error al actualizar local: ${JSON.stringify(
+              `Error al actualizar boton: ${JSON.stringify(
                 e.response.data.error['Errors List']
               )}`,
               {

@@ -117,9 +117,10 @@ export default {
         if (this.newUser.namesAndSurname === '') {
           this.newUser.namesAndSurname = null
         }
-        if (this.newUser.country !== '') { this.newUser.country = this.countrySelected.id } else {
+        if (this.countrySelected.name) { this.newUser.country = this.countrySelected.id } else {
           this.newUser.country = this.user.country.id
         }
+        console.log(this.newUser.country)
         this.$emit('update:user', this.newUser)
       }
     }

@@ -271,9 +271,9 @@ export default {
     updateUser (userC) {
       this.loadingMode = true
       const AdminID = userC.id
-      const body = { ...userC, country: userC.country.id }
+      const body = { ...userC }
       console.log(body)
-      body.avatar = !body.avatar && ''
+      body.avatar = !body.avatar ? '' : body.avatar
       this.$axios
         .$put(`/api/updateAdmin/${AdminID}`, body)
         .then((res) => {
