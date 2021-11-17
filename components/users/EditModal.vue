@@ -11,7 +11,7 @@
       <BaseInput placeholder="No visible" @input="newUser.password = $event" />
          <label>Nombre y apellido:</label>
       <BaseInput :valueinput="user.namesAndSurname" @input="newUser.namesAndSurname = $event" />
- <div v-if="user.isMain" class="selectContainer">
+ <div class="selectContainer">
           <label for="owner">Pais</label>
         <select id="owner" class="selectOwner" name="owner"  @change="setCountrySelected($event.target.value)">
            <option disabled selected value></option>
@@ -81,7 +81,9 @@ export default {
       this.$emit('cancel:click')
     },
     setCountrySelected (countryName) {
-      this.countrySelected = this.countries.find((o) => countryName === o.name)
+      console.log(countryName)
+      this.countrySelected = this.countries.find((o) => o.name === countryName)
+      console.log(this.countrySelected)
     },
     updateUser () {
       const regemail =
@@ -115,8 +117,8 @@ export default {
         if (this.newUser.namesAndSurname === '') {
           this.newUser.namesAndSurname = null
         }
-        if (this.newUser.country) { this.newUser.country = this.countrySelected.id } else {
-          this.newUser.country = this.user.country
+        if (this.newUser.country !== '') { this.newUser.country = this.countrySelected.id } else {
+          this.newUser.country = this.user.country.id
         }
         this.$emit('update:user', this.newUser)
       }

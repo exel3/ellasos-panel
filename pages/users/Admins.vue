@@ -271,20 +271,23 @@ export default {
     updateUser (userC) {
       this.loadingMode = true
       const AdminID = userC.id
-      const body = { ...userC }
-      body.avatar = !body.avatar && ''
+      const body = { ...userC, country: userC.country.id }
       console.log(body)
+      body.avatar = !body.avatar && ''
       this.$axios
         .$put(`/api/updateAdmin/${AdminID}`, body)
         .then((res) => {
-          this.newUser.id = res.id
-          this.currentUsers.push(this.newUser)
+          const userUpdated = res.admin
+          userUpdated.country = this.countries.find(c => res.admin.country === c.id)
+          const index = this.tableFilter.findIndex(u => u.id === userUpdated.id)
+          this.tableFilter[index] = userUpdated
+          // this.currentUsers.push(this.newUser)
           this.$toasted.show('Cambios guardados', {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 5000
           })
-          this.getUsers()
+          // this.getUsers()
           this.loadingMode = false
         })
         .catch((e) => {
