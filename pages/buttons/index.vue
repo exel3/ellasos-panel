@@ -228,7 +228,7 @@ export default {
     addButton (type) {
       let validacion = false
       let countryID = this.user.country
-      if (!this.user.isMain) {
+      if (this.user.isMain) {
         countryID = this.countrySelected.id
       }
       if (type === 'police') {
@@ -261,7 +261,8 @@ export default {
         this.$axios
           .$post('/api/createNewButton', body)
           .then((res) => {
-            this.tableFilter.push(res.local)
+            this.tableFilter.push(res.button)
+            this.currentButtons.push(res.button)
             this.$toasted.show('Cambios guardados', {
               theme: 'toasted-primary',
               position: 'top-right',
@@ -337,7 +338,7 @@ export default {
             const indexT = this.currentButtons.findIndex(
               (t) => t.id === res.button.id
             )
-            this.tableFilter[indexT] = res.button
+            this.tableFilter[indexT].phone = res.button.phone
             this.currentButtons = this.tableFilter
             this.loadingMode = false
           })
