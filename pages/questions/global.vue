@@ -155,7 +155,40 @@ WhatsApp de la Ciudad: 11-5050-0147`]
   async fetch () {
     await this.$axios.$get('/api/getUser').then(async (response) => {
       this.user = response
+      await this.$axios.$get('/api/getAllQuestions/0').then(response => {
+        this.currentQuestions = response.data.questions
+        this.tableFilter = response.data.questions
+        console.log(response.data)
+      })
+        .catch((e) => {
+          console.log(e)
+          this.loadingMode = false
+          this.$toasted.show(
+            `Error al recuperar usuario: ${JSON.stringify(
+              e.response.data.error['Errors List']
+            )}`,
+            {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000
+            }
+          )
+        })
     })
+      .catch((e) => {
+        console.log(e)
+        this.loadingMode = false
+        this.$toasted.show(
+            `Error al recuperar usuario: ${JSON.stringify(
+              e.response.data.error['Errors List']
+            )}`,
+            {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000
+            }
+        )
+      })
   },
   methods: {
     getGlobalQuestions () {

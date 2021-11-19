@@ -242,6 +242,31 @@ app.post('/admin/login', (req, res) => {
       })
     })
 })
+app.post('/getAllQuestions/:page', (req, res) => {
+  console.log('entro')
+  const { page } = req.parems
+  const body = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = { ...body }
+  axios.post(`https://ellasos.herokuapp.com/api/buttons/findQuestionsByCountryWithPagination/${page}`, data, headers)
+    .then(
+      response => {
+        console.log(response)
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      console.log(e)
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
+    })
+})
 app.post('/createNewQuestion', (req, res) => {
   const body = req.body
   const token = getToken(req, res)
