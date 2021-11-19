@@ -194,7 +194,7 @@ WhatsApp de la Ciudad: 11-5050-0147`]
     getGlobalQuestions () {
       this.loadingMode = true
       this.$axios
-        .$get('/api/getGlobalQuestions')
+        .$post('/api/getGlobalQuestions')
         .then((res) => {
           if (res) {
             this.questionLength = res.questions.length
