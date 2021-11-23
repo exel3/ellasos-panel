@@ -15,9 +15,9 @@
               @keyup.enter.prevent="addNewQuestion"
             />
           </div>
-          <div v-if="showNewAnswersInput" class="newAnswerForm">
+          <div v-if="shownewAnswerInput" class="newAnswerForm">
             <input
-              v-model="newAnswers[0]"
+              v-model="newAnswer"
               type="text"
               autocomplete="off"
               placeholder="Respuesta"
@@ -32,7 +32,7 @@
         </button>
       </div>
     </article>
-    <article class="userList">
+    <article v-if="tableFilter.length > 0" class="userList">
       <div class="titleCard"><p>Lista de preguntas y respuestas</p></div>
     </article>
     <article
@@ -104,47 +104,13 @@ export default {
   data: () => ({
     loadingMode: false,
     showDeleteModal: '',
-    showNewAnswersInput: false,
-    currentQuestions: [
-      {
-        question: '¿Donde me puedo comunicar ante una situacion violenta?',
-        answers: [`Si en tu casa estás viviendo situaciones de violencia de género, comunicate al 144. Es gratis, te atienden las 24 horas todos los días.
-
-Hay un femicidio cada 23 horas, y en esta etapa de aislamiento social, preventivo y obligatorio por el coronavirus, el número va en aumento.
-
-En caso de vivir una situación de violencia, la víctima puede salir y pedir ayuda: salir del aislamiento está justificado porque está en peligro. Ante esto, la Ciudad aconseja:
-
-911 - Urgencias
-Línea 144 - Asesoramiento, acompañamiento y contención
-Oficina de Violencia Doméstica - Denuncia y atención las 24 hs. (Lavalle 1250- 11-4123-4510)
-Comisaría más cercana - Denuncia
-Ministerio Público Fiscal - Denuncias y atención las 24 hs (denuncias@fiscalias.gob.ar)
-WhatsApp de la Ciudad: 11-5050-0147`]
-      },
-      { question: 'PreguntaFrecuente2', answers: ['Contenido respuesta pregunta frecuente2'] }
-    ],
+    shownewAnswerInput: false,
+    currentQuestions: [],
     questionLength: 0,
-    tableFilter: [
-      {
-        question: 'PreguntaFrecuente1',
-        answers: [`Si en tu casa estás viviendo situaciones de violencia de género, comunicate al 144. Es gratis, te atienden las 24 horas todos los días.
-
-Hay un femicidio cada 23 horas, y en esta etapa de aislamiento social, preventivo y obligatorio por el coronavirus, el número va en aumento.
-
-En caso de vivir una situación de violencia, la víctima puede salir y pedir ayuda: salir del aislamiento está justificado porque está en peligro. Ante esto, la Ciudad aconseja:
-
-911 - Urgencias
-Línea 144 - Asesoramiento, acompañamiento y contención
-Oficina de Violencia Doméstica - Denuncia y atención las 24 hs. (Lavalle 1250- 11-4123-4510)
-Comisaría más cercana - Denuncia
-Ministerio Público Fiscal - Denuncias y atención las 24 hs (denuncias@fiscalias.gob.ar)
-WhatsApp de la Ciudad: 11-5050-0147`]
-      },
-      { question: 'PreguntaFrecuente2', answers: ['Contenido respuesta pregunta frecuente2'] }
-    ],
+    tableFilter: [],
     localAnswers: [],
     newQuestion: '',
-    newAnswers: ['', ''],
+    newAnswer: '',
     buttonAddTitle: 'Agregar',
     user: {
       id: '',
@@ -155,18 +121,17 @@ WhatsApp de la Ciudad: 11-5050-0147`]
   async fetch () {
     await this.$axios.$get('/api/getUser').then(async (response) => {
       this.user = response
-      await this.$axios.$get('/api/getAllQuestions/0').then(response => {
-        this.currentQuestions = response.data.questions
-        this.tableFilter = response.data.questions
-        console.log(response.data)
+      const body = { ...this.user.country }
+      await this.$axios.$post('/api/getAllQuestions/0', body).then(response => {
+        this.currentQuestions = response.questions
+        this.tableFilter = response.questions
+        console.log(response)
       })
         .catch((e) => {
           console.log(e)
           this.loadingMode = false
           this.$toasted.show(
-            `Error al recuperar usuario: ${JSON.stringify(
-              e.response.data.error['Errors List']
-            )}`,
+            `Error al recuperar usuario: ${e}`,
             {
               theme: 'toasted-primary',
               position: 'top-right',
@@ -219,16 +184,16 @@ WhatsApp de la Ciudad: 11-5050-0147`]
     },
     addNewQuestion () {
       if ((this.newQuestion !== '') & (this.buttonAddTitle === 'Agregar')) {
-        this.changeShowNewAnswersInput()
+        this.changeShownewAnswerInput()
         this.buttonAddTitle = 'Confirmar'
-      } else if (this.newAnswers.includes('')) {
-        this.$toasted.show('Debe completar dos respuestas', {
+      } else if (this.newAnswer.includes('')) {
+        this.$toasted.show('Debe completar el contenido', {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000
         })
       } else {
-        this.$toasted.show('Creando pregunta..', {
+        this.$toasted.show('Creando contenido..', {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 2000
@@ -236,18 +201,17 @@ WhatsApp de la Ciudad: 11-5050-0147`]
         // this.confirmAddNewQuestion()
       }
     },
-    changeShowNewAnswersInput () {
-      this.showNewAnswersInput = true
+    changeShownewAnswerInput () {
+      this.shownewAnswerInput = true
     },
     async confirmAddNewQuestion () {
       if (
-        (this.newAnswers.filter((a) => a.answer === '').length === 0) &
+        (this.newAnswer !== '') &
         (this.newQuestion !== '')
       ) {
-        // TODO: addNewQuestion in bd
         const temporalQuestion = {
           question: this.newQuestion,
-          answers: this.newAnswers
+          answers: this.newAnswer
         }
         if (this.currentQuestions === undefined) {
           this.currentQuestions = []
@@ -265,7 +229,7 @@ WhatsApp de la Ciudad: 11-5050-0147`]
           this.confirmChangeQuestion()
         } else {
           await this.$axios
-            .$post('/api/createQuestions', body)
+            .$post('/api/createNewQuestion', body)
             .then((res) =>
               this.$toasted.show('Cambios guardados', {
                 theme: 'toasted-primary',
@@ -288,8 +252,8 @@ WhatsApp de la Ciudad: 11-5050-0147`]
             })
         }
         this.newQuestion = ''
-        this.newAnswers = []
-        this.showNewAnswersInput = false
+        this.newAnswer = ''
+        this.shownewAnswerInput = false
         this.buttonAddTitle = 'Agregar'
       }
     },
