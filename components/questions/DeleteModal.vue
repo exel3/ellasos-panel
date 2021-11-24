@@ -5,7 +5,7 @@
       <div class="modalText">
         <h1>ADVERTENCIA</h1>
         <p>
-          Eliminar el local borrará todas sus mesas de la base de datos,
+          Eliminará el contenido de la base de datos,
           ¿Desea continuar?
         </p>
       </div>
@@ -18,7 +18,7 @@
 </template>
 <script>
 export default {
-  name: 'DeleteModal'
+  name: 'DeleteModalQuestion'
 }
 </script>
 <style scoped>

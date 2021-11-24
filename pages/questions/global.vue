@@ -1,6 +1,15 @@
 <template>
   <Loading v-if="$fetchState.pending" class="fetchState" />
   <section v-else>
+        <article v-if="user.isMain" class="newlocal">
+          <div class="selectContainer">
+          <label for="owner">Pais</label>
+   <select id="owner" class="selectOwner" name="owner" @change="setCountrySelected($event.target.value)">
+             <option disabled selected value>Seleccione pais..</option>
+               <option  v-for="country in countries" :key="country.id" :value="country.name">{{country.name}}</option>
+        </select>
+          </div>
+    </article>
     <article class="newQuestionArticle">
       <div class="titleCard"><p>Nueva pregunta frecuente</p></div>
       <div class="newQuestionContainer">
@@ -16,7 +25,7 @@
             />
           </div>
           <div v-if="shownewAnswerInput" class="newAnswerForm">
-            <input
+            <textarea
               v-model="newAnswer"
               type="text"
               autocomplete="off"
@@ -56,29 +65,18 @@
             <th>
               <img
                 src="@/assets/icons/deleteGray.svg"
-                @click="deleteQuestion(question)"
+                @click="showDeleteModal = true; questionSelected = question"
               />
             </th>
           </tr>
         </thead>
         <tbody>
-          <tr
-            v-for="(answer, indexAnswer) in question.answers"
-            :key="answer._id"
-          >
+          <tr>
             <td>
               <textarea
-                v-model="question.answers[indexAnswer]"
+                v-model="question.answer"
                 class="answerInput"
                 @blur="confirmChangeQuestion()"
-              />
-            </td>
-            <td class="tdDelete">
-              <img
-                v-if="question.answers.length > 2"
-                class="imgDeleteAnswer"
-                src="@/assets/icons/deleteGray.svg"
-                @click="deleteAnswer(indexQuestion, answer)"
               />
             </td>
           </tr>
@@ -87,13 +85,13 @@
     </article>
     <DeleteModal
       v-if="showDeleteModal"
-      @delete-user="deleteUser"
-      @cancel-delete="showDeleteModal = false"
+      @delete:local="deleteQuestion"
+      @cancel:delete="showDeleteModal = false"
     />
   </section>
 </template>
 <script>
-import DeleteModal from '@/components/users/DeleteModal.vue'
+import DeleteModal from '@/components/questions/DeleteModal.vue'
 import Loading from '@/components/ui/Loading.vue'
 export default {
   name: 'GlobalQuestions',
@@ -103,9 +101,11 @@ export default {
   },
   data: () => ({
     loadingMode: false,
-    showDeleteModal: '',
+    showDeleteModal: false,
     shownewAnswerInput: false,
+    questionSelected: {},
     currentQuestions: [],
+    countrySelected: {},
     questionLength: 0,
     tableFilter: [],
     localAnswers: [],
@@ -121,24 +121,37 @@ export default {
   async fetch () {
     await this.$axios.$get('/api/getUser').then(async (response) => {
       this.user = response
-      const body = { ...this.user.country }
-      await this.$axios.$post('/api/getAllQuestions/0', body).then(response => {
-        this.currentQuestions = response.questions
-        this.tableFilter = response.questions
-        console.log(response)
-      })
-        .catch((e) => {
-          console.log(e)
+      this.user.isMain
+        ? await this.$axios
+          .$get('/api/getAllCountries')
+          .then((response) => {
+            this.countries = response.countries
+          })
+          .catch((e) => {
+            this.$toasted.show(`Error al recuperar paises: ${e}`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000
+            })
+          })
+        : await this.$axios.$post('/api/getAllQuestions/0', { ...this.user.country }).then(response => {
+          this.currentQuestions = response.questions
+          this.tableFilter = response.questions
           this.loadingMode = false
-          this.$toasted.show(
+          console.log(response)
+        })
+          .catch((e) => {
+            console.log(e)
+            this.loadingMode = false
+            this.$toasted.show(
             `Error al recuperar usuario: ${e}`,
             {
               theme: 'toasted-primary',
               position: 'top-right',
               duration: 5000
             }
-          )
-        })
+            )
+          })
     })
       .catch((e) => {
         console.log(e)
@@ -156,24 +169,25 @@ export default {
       })
   },
   methods: {
-    getGlobalQuestions () {
+    setCountrySelected (countryName) {
+      this.countrySelected = this.countries.find((o) => countryName === o.name)
+      this.getGlobalQuestions()
+    },
+    async getGlobalQuestions () {
       this.loadingMode = true
-      this.$axios
-        .$post('/api/getGlobalQuestions')
-        .then((res) => {
-          if (res) {
-            this.questionLength = res.questions.length
-            this.currentQuestions = res.questions
-            this.tableFilter = res.questions
-          }
-          this.loadingMode = false
-        })
+      let body = {}
+      this.user.isMain ? body = { country: this.countrySelected.id } : body = { country: this.user.country }
+      await this.$axios.$post('/api/getAllQuestions/0', body).then(response => {
+        this.currentQuestions = response.questions
+        this.tableFilter = response.questions
+        this.loadingMode = false
+        console.log(response)
+      })
         .catch((e) => {
+          console.log(e)
           this.loadingMode = false
           this.$toasted.show(
-            `Error al recuperar preguntas: ${JSON.stringify(
-              e.response.data.error['Errors List']
-            )}`,
+            `Error al recuperar usuario: ${e}`,
             {
               theme: 'toasted-primary',
               position: 'top-right',
@@ -186,8 +200,14 @@ export default {
       if ((this.newQuestion !== '') & (this.buttonAddTitle === 'Agregar')) {
         this.changeShownewAnswerInput()
         this.buttonAddTitle = 'Confirmar'
-      } else if (this.newAnswer.includes('')) {
+      } else if (this.newAnswer === '') {
         this.$toasted.show('Debe completar el contenido', {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000
+        })
+      } else if (this.user.isMain && !this.countrySelected.id) {
+        this.$toasted.show('Debe seleccionar un pais', {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000
@@ -198,7 +218,7 @@ export default {
           position: 'top-right',
           duration: 2000
         })
-        // this.confirmAddNewQuestion()
+        this.confirmAddNewQuestion()
       }
     },
     changeShownewAnswerInput () {
@@ -211,21 +231,16 @@ export default {
       ) {
         const temporalQuestion = {
           question: this.newQuestion,
-          answers: this.newAnswer
+          answer: this.newAnswer,
+          country: this.countrySelected.id ? this.countrySelected.id : this.user.country
         }
         if (this.currentQuestions === undefined) {
           this.currentQuestions = []
         }
-        this.currentQuestions.push(temporalQuestion)
+        // this.currentQuestions.push(temporalQuestion)
         this.tableFilter.push(temporalQuestion)
-        const body = this.currentQuestions
-        if (this.currentQuestions.length < 3) {
-          this.$toasted.show('Se deben crear por lo menos 3 preguntas', {
-            theme: 'toasted-primary',
-            position: 'top-right',
-            duration: 5000
-          })
-        } else if (this.questionLength > 0) {
+        const body = temporalQuestion
+        if (this.questionLength > 0) {
           this.confirmChangeQuestion()
         } else {
           await this.$axios
@@ -239,9 +254,7 @@ export default {
             )
             .catch((e) => {
               this.$toasted.show(
-                `Error al guardar cambios:${JSON.stringify(
-                  e.response.data.error['Errors List']
-                )}`,
+                `Error al guardar cambios:${e}`,
                 {
                   theme: 'toasted-primary',
                   position: 'top-right',
@@ -301,9 +314,9 @@ export default {
       }
     },
 
-    deleteQuestion (questionC) {
+    async deleteQuestion () {
       this.currentQuestions = this.currentQuestions.filter(
-        (q) => questionC.question !== q.question
+        (q) => this.questionSelected.question !== q.question
       )
       this.tableFilter = [...this.currentQuestions]
       try {
@@ -312,7 +325,13 @@ export default {
           position: 'top-right',
           duration: 2000
         })
-        this.confirmChangeQuestion()
+        await this.$axios.$delete(`/api/deleteQuestion/${this.questionSelected.id}`)
+          .then(response =>
+            this.$toasted.show('Contenido borrado', {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000
+            }))
       } catch (e) {
         this.$toasted.show(`Error al borrar pregunta: ${e}`, {
           theme: 'toasted-primary',
@@ -320,25 +339,7 @@ export default {
           duration: 5000
         })
       }
-    },
-    deleteAnswer (questionIndex, answer) {
-      this.currentQuestions[questionIndex].answers = this.currentQuestions[
-        questionIndex
-      ].answers.filter((a) => answer !== a)
-      try {
-        this.confirmChangeQuestion()
-        this.$toasted.show('Borrando respuesta..', {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 2000
-        })
-      } catch (e) {
-        this.$toasted.show(`Error al borrar respuesta: ${e}`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000
-        })
-      }
+      this.showDeleteModal = false
     },
     addNewAnswer (questionIndex) {
       this.currentQuestions[questionIndex].answers.push('')
@@ -495,6 +496,25 @@ textarea {
   border-radius: 0.25rem;
   box-shadow: 0 3px 2px rgb(233 236 239 / 5%);
   box-sizing: border-box;
+}
+
+.selectOwner {
+  width: 100%;
+  height: 2rem;
+  padding: 0 0.75rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #656a6f;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  box-shadow: 0 3px 2px rgb(233 236 239 / 5%);
+  box-sizing: border-box;
+}
+
+.selectContainer {
+  padding: 1rem;
 }
 
 .contentCard {

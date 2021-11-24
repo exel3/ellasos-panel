@@ -274,14 +274,17 @@ app.post('/createNewQuestion', (req, res) => {
       { authorization: token }
   }
   const data = { ...body }
+  console.log(data)
   axios.post('https://ellasos.herokuapp.com/api/questions/create', data, headers)
     .then(
       response => {
+        console.log(response)
         res.json(response.data)
       }
     )
     .catch(e => {
       res.statusCode = e.response.status
+      console.log(e)
       res.json({
         error: e.response.data
       })
