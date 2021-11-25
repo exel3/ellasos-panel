@@ -56,10 +56,7 @@
               <input
                 v-model="currentQuestions[indexQuestion].question"
                 class="questionInput"
-                @blur="
-                  showToast()
-                  confirmChangeQuestion()
-                "
+                @blur="questionSelected = question;showToast();confirmChangeQuestion()"
               />
             </th>
             <th>
@@ -76,7 +73,7 @@
               <textarea
                 v-model="question.answer"
                 class="answerInput"
-                @blur="confirmChangeQuestion()"
+                @blur="questionSelected = question;confirmChangeQuestion()"
               />
             </td>
           </tr>
@@ -134,14 +131,12 @@ export default {
               duration: 5000
             })
           })
-        : await this.$axios.$post('/api/getAllQuestions/0', { ...this.user.country }).then(response => {
+        : await this.$axios.$post('/api/getAllQuestions/0', { country: this.user.country }).then(response => {
           this.currentQuestions = response.questions
           this.tableFilter = response.questions
           this.loadingMode = false
-          console.log(response)
         })
           .catch((e) => {
-            console.log(e)
             this.loadingMode = false
             this.$toasted.show(
             `Error al recuperar usuario: ${e}`,
@@ -154,7 +149,6 @@ export default {
           })
     })
       .catch((e) => {
-        console.log(e)
         this.loadingMode = false
         this.$toasted.show(
             `Error al recuperar usuario: ${JSON.stringify(
@@ -181,10 +175,8 @@ export default {
         this.currentQuestions = response.questions
         this.tableFilter = response.questions
         this.loadingMode = false
-        console.log(response)
       })
         .catch((e) => {
-          console.log(e)
           this.loadingMode = false
           this.$toasted.show(
             `Error al recuperar usuario: ${e}`,
@@ -238,32 +230,29 @@ export default {
           this.currentQuestions = []
         }
         // this.currentQuestions.push(temporalQuestion)
-        this.tableFilter.push(temporalQuestion)
         const body = temporalQuestion
-        if (this.questionLength > 0) {
-          this.confirmChangeQuestion()
-        } else {
-          await this.$axios
-            .$post('/api/createNewQuestion', body)
-            .then((res) =>
-              this.$toasted.show('Cambios guardados', {
-                theme: 'toasted-primary',
-                position: 'top-right',
-                duration: 2000
-              })
-            )
-            .catch((e) => {
-              this.$toasted.show(
+        await this.$axios
+          .$post('/api/createNewQuestion', body)
+          .then((res) => {
+            this.tableFilter.push(res.question)
+            this.$toasted.show('Cambios guardados', {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 2000
+            })
+          }
+          )
+          .catch((e) => {
+            this.$toasted.show(
                 `Error al guardar cambios:${e}`,
                 {
                   theme: 'toasted-primary',
                   position: 'top-right',
                   duration: 10000
                 }
-              )
-              this.loadingMode = false
-            })
-        }
+            )
+            this.loadingMode = false
+          })
         this.newQuestion = ''
         this.newAnswer = ''
         this.shownewAnswerInput = false
@@ -272,25 +261,27 @@ export default {
     },
 
     confirmChangeQuestion () {
-      const body = this.currentQuestions
+      let body = this.questionSelected
+      const index = this.currentQuestions.findIndex(q => q.id === this.questionSelected.id)
+      if (this.currentQuestions[index].question === this.questionSelected.question) {
+        body = { ...this.questionSelected, question: null }
+      } else if (this.currentQuestions[index].answer === this.questionSelected.answer) {
+        body = { ...this.questionSelected, answer: null }
+      } else {
+        body = { ...this.questionSelected }
+      }
       const emptyAswers = this.currentQuestions.filter((q) =>
-        q.answers.includes('')
+        q.answer === ''
       )
-      if (this.currentQuestions.length < 3) {
-        this.$toasted.show('Se deben crear por lo menos 3 preguntas', {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000
-        })
-      } else if (emptyAswers.length > 0) {
-        this.$toasted.show('No se admiten respuetas vacias', {
+      if (emptyAswers.length > 0) {
+        this.$toasted.show('No se admiten contenidos vacios', {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000
         })
       } else {
         this.$axios
-          .$put('/api/updateGlobalQuestions', body)
+          .$put(`/api/updateQuestion/${this.questionSelected.id}`, body)
           .then((res) =>
             this.$toasted.show('Cambios guardados', {
               theme: 'toasted-primary',
@@ -300,9 +291,7 @@ export default {
           )
           .catch((e) => {
             this.$toasted.show(
-              `Error al guardar cambios:${JSON.stringify(
-                e.response.data.error['Errors List']
-              )}`,
+              `Error al guardar cambios:${e}`,
               {
                 theme: 'toasted-primary',
                 position: 'top-right',

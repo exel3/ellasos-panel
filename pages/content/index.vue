@@ -1,84 +1,79 @@
 <template>
   <Loading v-if="$fetchState.pending" class="fetchState" />
   <section v-else>
-    <article class="newQuestionArticle">
+        <article v-if="user.isMain" class="newlocal">
+          <div class="selectContainer">
+          <label for="owner">Pais</label>
+   <select id="owner" class="selectOwner" name="owner" @change="setCountrySelected($event.target.value)">
+             <option disabled selected value>Seleccione pais..</option>
+               <option  v-for="country in countries" :key="country.id" :value="country.name">{{country.name}}</option>
+        </select>
+          </div>
+    </article>
+    <article class="newActionsArticle">
       <div class="titleCard"><p>Nuevo ¿Que hacer en caso de ..?</p></div>
-      <div class="newQuestionContainer">
+      <div class="newActionsContainer">
         <form @submit.prevent="">
-          <div class="newQuestionForm">
-            <label for="newQuestion">Caso o situacion</label>
+          <div class="newActionsForm">
+            <label for="newActions">Caso o situacion</label>
             <input
-              id="newQuestion"
-              v-model="newQuestion"
+              id="newActions"
+              v-model="newActions"
               type="text"
               autocomplete="off"
-              @keyup.enter.prevent="addNewQuestion"
+              @keyup.enter.prevent="addNewActions"
             />
           </div>
-          <div v-if="showNewAnswersInput" class="newAnswerForm">
-            <input
-              v-model="newAnswers[0]"
+          <div v-if="shownewContentInput" class="newContentForm">
+            <textarea
+              v-model="newContent"
               type="text"
               autocomplete="off"
               placeholder="Respuesta"
-              @keyup.enter.prevent="addNewQuestion"
+              @keyup.enter.prevent="addNewActions"
             />
           </div>
         </form>
       </div>
       <div class="containerAddBtn">
-        <button @click.prevent="addNewQuestion()">
+        <button @click.prevent="addNewActions()">
           {{ buttonAddTitle }}
         </button>
       </div>
     </article>
-    <article class="userList">
-      <div class="titleCard"><p>Lista de casos y contenidos</p></div>
+    <article v-if="tableFilter.length > 0" class="userList">
+      <div class="titleCard"><p>Lista de contenidos</p></div>
     </article>
     <article
-      v-for="(question, indexQuestion) in tableFilter"
-      :key="question._id"
-      class="answerList"
+      v-for="(actions, indexactions) in tableFilter"
+      :key="actions._id"
+      class="contentList"
     >
       <table>
         <thead>
           <tr>
             <th>
               <input
-                v-model="currentQuestions[indexQuestion].question"
-                class="questionInput"
-                @blur="
-                  showToast()
-                  confirmChangeQuestion()
-                "
+                v-model="currentActions[indexactions].name"
+                class="actionsInput"
+                @blur="actionselected = actions;showToast();confirmChangeactions()"
               />
             </th>
             <th>
               <img
                 src="@/assets/icons/deleteGray.svg"
-                @click="deleteQuestion(question)"
+                @click="showDeleteModal = true; actionselected = actions"
               />
             </th>
           </tr>
         </thead>
         <tbody>
-          <tr
-            v-for="(answer, indexAnswer) in question.answers"
-            :key="answer._id"
-          >
+          <tr>
             <td>
               <textarea
-                v-model="question.answers[indexAnswer]"
-                class="answerInput"
-                @blur="confirmChangeQuestion()"
-              />
-            </td>
-            <td class="tdDelete">
-              <img
-                v-if="question.answers.length > 2"
-                class="imgDeleteAnswer"
-                src="@/assets/icons/deleteGray.svg"
-                @click="deleteAnswer(indexQuestion, answer)"
+                v-model="actions.content"
+                class="contentInput"
+                @blur="actionselected = actions;confirmChangeactions()"
               />
             </td>
           </tr>
@@ -87,56 +82,32 @@
     </article>
     <DeleteModal
       v-if="showDeleteModal"
-      @delete-user="deleteUser"
-      @cancel-delete="showDeleteModal = false"
+      @delete:local="deleteActions"
+      @cancel:delete="showDeleteModal = false"
     />
   </section>
 </template>
 <script>
-import DeleteModal from '@/components/users/DeleteModal.vue'
+import DeleteModal from '@/components/questions/DeleteModal.vue'
 import Loading from '@/components/ui/Loading.vue'
 export default {
-  name: 'GlobalQuestions',
+  name: 'ActionsIndex',
   components: {
     DeleteModal,
     Loading
   },
   data: () => ({
     loadingMode: false,
-    showDeleteModal: '',
-    showNewAnswersInput: false,
-    currentQuestions: [
-      {
-        question: '¿Qué hacer si mi pareja o expareja oculta sus bienes para no responder por sus obligaciones?',
-        answers: [`Esta acción de tu pareja o expareja constituye violencia económica y puede ser un tipo de violencia intrafamiliar. Dependiendo de tu caso puedes iniciar rutas diferentes.
-
-Si estás en proceso de divorcio o separación. En este caso, puedes pedirle al juez que emita una medida de protección para impedir que tu pareja o expareja venda sus bienes o los ponga a nombre de otra persona (literal L, artículo 17, Ley 1257 de 2008).
-Si no te has separado, puedes acudir a la Comisaría de Familia y pedir que te brinden una medida de protección donde se impida a tu pareja vender sus bienes (literal L, artículo 17, Ley 1257 de 2008).
-Si tienes una medida de protección previa por violencia intrafamiliar, ve a la Comisaría de Familia en donde la tramitaste y solicita que te amplíen la medida de protección para que se le impida a tu pareja o expareja vender sus bienes (literal L, artículo 17, Ley 1257 de 2008).
-En caso de que tu pareja o expareja ya haya vendido sus bienes, puedes poner una denuncia en la Fiscalía General de la Nación por el delito de alzamiento de bienes (artículo 253 del Código Penal).
-
-Si tu pareja o expareja lleva a cabo esta conducta para evitar cumplir con el pago de alimentos, puedes denunciarle por el delito de inasistencia alimentaria en la Fiscalía General de la Nación (artículo 233 del Código Penal).`]
-      },
-      { question: 'PreguntaFrecuente2', answers: ['Contenido respuesta pregunta frecuente2'] }
-    ],
-    questionLength: 0,
-    tableFilter: [
-      {
-        question: '¿Qué hacer si mi pareja o expareja oculta sus bienes para no responder por sus obligaciones?',
-        answers: [`Esta acción de tu pareja o expareja constituye violencia económica y puede ser un tipo de violencia intrafamiliar. Dependiendo de tu caso puedes iniciar rutas diferentes.
-
-Si estás en proceso de divorcio o separación. En este caso, puedes pedirle al juez que emita una medida de protección para impedir que tu pareja o expareja venda sus bienes o los ponga a nombre de otra persona (literal L, artículo 17, Ley 1257 de 2008).
-Si no te has separado, puedes acudir a la Comisaría de Familia y pedir que te brinden una medida de protección donde se impida a tu pareja vender sus bienes (literal L, artículo 17, Ley 1257 de 2008).
-Si tienes una medida de protección previa por violencia intrafamiliar, ve a la Comisaría de Familia en donde la tramitaste y solicita que te amplíen la medida de protección para que se le impida a tu pareja o expareja vender sus bienes (literal L, artículo 17, Ley 1257 de 2008).
-En caso de que tu pareja o expareja ya haya vendido sus bienes, puedes poner una denuncia en la Fiscalía General de la Nación por el delito de alzamiento de bienes (artículo 253 del Código Penal).
-
-Si tu pareja o expareja lleva a cabo esta conducta para evitar cumplir con el pago de alimentos, puedes denunciarle por el delito de inasistencia alimentaria en la Fiscalía General de la Nación (artículo 233 del Código Penal).`]
-      },
-      { question: 'PreguntaFrecuente2', answers: ['Contenido respuesta pregunta frecuente2'] }
-    ],
-    localAnswers: [],
-    newQuestion: '',
-    newAnswers: ['', ''],
+    showDeleteModal: false,
+    shownewContentInput: false,
+    actionselected: {},
+    currentActions: [],
+    countrySelected: {},
+    actionsLength: 0,
+    tableFilter: [],
+    localcontents: [],
+    newActions: '',
+    newContent: '',
     buttonAddTitle: 'Agregar',
     user: {
       id: '',
@@ -147,27 +118,68 @@ Si tu pareja o expareja lleva a cabo esta conducta para evitar cumplir con el pa
   async fetch () {
     await this.$axios.$get('/api/getUser').then(async (response) => {
       this.user = response
-    })
-  },
-  methods: {
-    getGlobalQuestions () {
-      this.loadingMode = true
-      this.$axios
-        .$get('/api/getGlobalQuestions')
-        .then((res) => {
-          if (res) {
-            this.questionLength = res.questions.length
-            this.currentQuestions = res.questions
-            this.tableFilter = res.questions
-          }
+      this.user.isMain
+        ? await this.$axios
+          .$get('/api/getAllCountries')
+          .then((response) => {
+            this.countries = response.countries
+          })
+          .catch((e) => {
+            this.$toasted.show(`Error al recuperar paises: ${e}`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000
+            })
+          })
+        : await this.$axios.$post('/api/getAllActions/0', { country: this.user.country }).then(response => {
+          this.currentActions = response.actions
+          this.tableFilter = response.actions
           this.loadingMode = false
         })
+          .catch((e) => {
+            this.loadingMode = false
+            this.$toasted.show(
+            `Error al recuperar usuario: ${e}`,
+            {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000
+            }
+            )
+          })
+    })
+      .catch((e) => {
+        this.loadingMode = false
+        this.$toasted.show(
+            `Error al recuperar usuario: ${JSON.stringify(
+              e.response.data.error['Errors List']
+            )}`,
+            {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000
+            }
+        )
+      })
+  },
+  methods: {
+    setCountrySelected (countryName) {
+      this.countrySelected = this.countries.find((o) => countryName === o.name)
+      this.getAllActions()
+    },
+    async getAllActions () {
+      this.loadingMode = true
+      let body = {}
+      this.user.isMain ? body = { country: this.countrySelected.id } : body = { country: this.user.country }
+      await this.$axios.$post('/api/getAllActions/0', body).then(response => {
+        this.currentActions = response.actions
+        this.tableFilter = response.actions
+        this.loadingMode = false
+      })
         .catch((e) => {
           this.loadingMode = false
           this.$toasted.show(
-            `Error al recuperar preguntas: ${JSON.stringify(
-              e.response.data.error['Errors List']
-            )}`,
+            `Error al recuperar usuario: ${e}`,
             {
               theme: 'toasted-primary',
               position: 'top-right',
@@ -176,103 +188,100 @@ Si tu pareja o expareja lleva a cabo esta conducta para evitar cumplir con el pa
           )
         })
     },
-    addNewQuestion () {
-      if ((this.newQuestion !== '') & (this.buttonAddTitle === 'Agregar')) {
-        this.changeShowNewAnswersInput()
+    addNewActions () {
+      if ((this.newActions !== '') & (this.buttonAddTitle === 'Agregar')) {
+        this.changeShownewContentInput()
         this.buttonAddTitle = 'Confirmar'
-      } else if (this.newAnswers.includes('')) {
-        this.$toasted.show('Debe completar dos respuestas', {
+      } else if (this.newContent === '') {
+        this.$toasted.show('Debe completar el contenido', {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000
+        })
+      } else if (this.user.isMain && !this.countrySelected.id) {
+        this.$toasted.show('Debe seleccionar un pais', {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000
         })
       } else {
-        this.$toasted.show('Creando pregunta..', {
+        this.$toasted.show('Creando contenido..', {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 2000
         })
-        // this.confirmAddNewQuestion()
+        this.confirmaddNewActions()
       }
     },
-    changeShowNewAnswersInput () {
-      this.showNewAnswersInput = true
+    changeShownewContentInput () {
+      this.shownewContentInput = true
     },
-    async confirmAddNewQuestion () {
+    async confirmaddNewActions () {
       if (
-        (this.newAnswers.filter((a) => a.answer === '').length === 0) &
-        (this.newQuestion !== '')
+        (this.newContent !== '') &
+        (this.newActions !== '')
       ) {
-        // TODO: addNewQuestion in bd
-        const temporalQuestion = {
-          question: this.newQuestion,
-          answers: this.newAnswers
+        const temporalActions = {
+          name: this.newActions,
+          content: this.newContent,
+          country: this.countrySelected.id ? this.countrySelected.id : this.user.country
         }
-        if (this.currentQuestions === undefined) {
-          this.currentQuestions = []
+        if (this.currentActions === undefined) {
+          this.currentActions = []
         }
-        this.currentQuestions.push(temporalQuestion)
-        this.tableFilter.push(temporalQuestion)
-        const body = this.currentQuestions
-        if (this.currentQuestions.length < 3) {
-          this.$toasted.show('Se deben crear por lo menos 3 preguntas', {
-            theme: 'toasted-primary',
-            position: 'top-right',
-            duration: 5000
-          })
-        } else if (this.questionLength > 0) {
-          this.confirmChangeQuestion()
-        } else {
-          await this.$axios
-            .$post('/api/createQuestions', body)
-            .then((res) =>
-              this.$toasted.show('Cambios guardados', {
-                theme: 'toasted-primary',
-                position: 'top-right',
-                duration: 2000
-              })
-            )
-            .catch((e) => {
-              this.$toasted.show(
-                `Error al guardar cambios:${JSON.stringify(
-                  e.response.data.error['Errors List']
-                )}`,
+        // this.currentActions.push(temporalActions)
+        const body = temporalActions
+        await this.$axios
+          .$post('/api/createNewActions', body)
+          .then((res) => {
+            this.tableFilter.push(res.actions)
+            this.$toasted.show('Cambios guardados', {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 2000
+            })
+          }
+          )
+          .catch((e) => {
+            this.$toasted.show(
+                `Error al guardar cambios:${e}`,
                 {
                   theme: 'toasted-primary',
                   position: 'top-right',
                   duration: 10000
                 }
-              )
-              this.loadingMode = false
-            })
-        }
-        this.newQuestion = ''
-        this.newAnswers = []
-        this.showNewAnswersInput = false
+            )
+            this.loadingMode = false
+          })
+        this.newActions = ''
+        this.newContent = ''
+        this.shownewContentInput = false
         this.buttonAddTitle = 'Agregar'
       }
     },
 
-    confirmChangeQuestion () {
-      const body = this.currentQuestions
-      const emptyAswers = this.currentQuestions.filter((q) =>
-        q.answers.includes('')
+    confirmChangeactions () {
+      let body = this.actionselected
+      const index = this.currentActions.findIndex(q => q.id === this.actionselected.id)
+      if (this.currentActions[index].name === this.actionselected.name) {
+        body = { ...this.actionselected, name: null }
+      } else if (this.currentActions[index].content === this.actionselected.content) {
+        body = { ...this.actionselected, content: null }
+      } else {
+        body = { ...this.actionselected }
+      }
+      const emptyAswers = this.currentActions.filter((q) =>
+        q.content === ''
       )
-      if (this.currentQuestions.length < 3) {
-        this.$toasted.show('Se deben crear por lo menos 3 preguntas', {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000
-        })
-      } else if (emptyAswers.length > 0) {
-        this.$toasted.show('No se admiten respuetas vacias', {
+      if (emptyAswers.length > 0) {
+        this.$toasted.show('No se admiten contenidos vacios', {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000
         })
       } else {
         this.$axios
-          .$put('/api/updateGlobalQuestions', body)
+          .$put(`/api/updateActions/${this.actionselected.id}`, body)
           .then((res) =>
             this.$toasted.show('Cambios guardados', {
               theme: 'toasted-primary',
@@ -282,9 +291,7 @@ Si tu pareja o expareja lleva a cabo esta conducta para evitar cumplir con el pa
           )
           .catch((e) => {
             this.$toasted.show(
-              `Error al guardar cambios:${JSON.stringify(
-                e.response.data.error['Errors List']
-              )}`,
+              `Error al guardar cambios:${e}`,
               {
                 theme: 'toasted-primary',
                 position: 'top-right',
@@ -296,18 +303,24 @@ Si tu pareja o expareja lleva a cabo esta conducta para evitar cumplir con el pa
       }
     },
 
-    deleteQuestion (questionC) {
-      this.currentQuestions = this.currentQuestions.filter(
-        (q) => questionC.question !== q.question
+    async deleteActions () {
+      this.currentActions = this.currentActions.filter(
+        (q) => this.actionselected.name !== q.name
       )
-      this.tableFilter = [...this.currentQuestions]
+      this.tableFilter = [...this.currentActions]
       try {
         this.$toasted.show('Borrando pregunta..', {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 2000
         })
-        this.confirmChangeQuestion()
+        await this.$axios.$delete(`/api/deleteActions/${this.actionselected.id}`)
+          .then(response =>
+            this.$toasted.show('Contenido borrado', {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000
+            }))
       } catch (e) {
         this.$toasted.show(`Error al borrar pregunta: ${e}`, {
           theme: 'toasted-primary',
@@ -315,28 +328,10 @@ Si tu pareja o expareja lleva a cabo esta conducta para evitar cumplir con el pa
           duration: 5000
         })
       }
+      this.showDeleteModal = false
     },
-    deleteAnswer (questionIndex, answer) {
-      this.currentQuestions[questionIndex].answers = this.currentQuestions[
-        questionIndex
-      ].answers.filter((a) => answer !== a)
-      try {
-        this.confirmChangeQuestion()
-        this.$toasted.show('Borrando respuesta..', {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 2000
-        })
-      } catch (e) {
-        this.$toasted.show(`Error al borrar respuesta: ${e}`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000
-        })
-      }
-    },
-    addNewAnswer (questionIndex) {
-      this.currentQuestions[questionIndex].answers.push('')
+    addnewContent (actionsIndex) {
+      this.currentActions[actionsIndex].contents.push('')
     },
     showToast () {
       this.$toasted.show('Guardando cambios..', {
@@ -418,7 +413,7 @@ article {
   z-index: 2;
   overflow: hidden;
 }
-.answerList {
+.contentList {
   margin-bottom: 1rem;
 }
 
@@ -479,7 +474,7 @@ input {
 
 textarea {
     width: 100%;
-  min-height: 10rem;
+  min-height: 6rem;
   padding: 0.625rem 0.75rem;
   font-weight: 400;
   line-height: 1.5;
@@ -490,6 +485,25 @@ textarea {
   border-radius: 0.25rem;
   box-shadow: 0 3px 2px rgb(233 236 239 / 5%);
   box-sizing: border-box;
+}
+
+.selectOwner {
+  width: 100%;
+  height: 2rem;
+  padding: 0 0.75rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #656a6f;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  box-shadow: 0 3px 2px rgb(233 236 239 / 5%);
+  box-sizing: border-box;
+}
+
+.selectContainer {
+  padding: 1rem;
 }
 
 .contentCard {
@@ -562,7 +576,7 @@ table img {
   cursor: pointer;
 }
 
-.newQuestionContainer {
+.newActionsContainer {
   display: grid;
   grid-auto-flow: row;
   position: relative;
@@ -570,25 +584,25 @@ table img {
   padding: 1rem;
 }
 
-.questionInput {
+.actionsInput {
   font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.5;
   color: #32325d;
 }
 
-.answerInput {
+.contentInput {
   line-height: 1.5;
   color: #525f7f;
   font-weight: 400;
 }
-#newQuestion {
+#newActions {
   margin-top: 1rem;
 }
-.newQuestionForm {
+.newActionsForm {
   margin-bottom: 1rem;
 }
-.newAnswerForm {
+.newContentForm {
   margin-bottom: 1rem;
 }
 .invisibleImg {
@@ -635,7 +649,7 @@ table img {
   cursor: pointer;
 }
 
-.imgDeleteAnswer {
+.imgDeletecontent {
   width: 1.3rem;
 }
 

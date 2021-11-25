@@ -292,13 +292,14 @@ app.post('/createNewQuestion', (req, res) => {
 })
 app.put('/updateQuestion/:questionID', (req, res) => {
   const { questionID } = req.params
-  const { question, content } = req.body
+  const { question, answer } = req.body
   const token = getToken(req, res)
   const headers = {
     headers:
       { authorization: token }
   }
-  const data = { question, content }
+  const data = { question, answer, country: null }
+  console.log(questionID, data)
   axios.put(`https://ellasos.herokuapp.com/api/questions/update/${questionID}`, data, headers)
     .then(
       response => {
@@ -320,6 +321,94 @@ app.delete('/deleteQuestion/:questionID', (req, res) => {
       { authorization: token }
   }
   axios.delete(`https://ellasos.herokuapp.com/api/questions/delete/${questionID}`, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
+    })
+})
+app.post('/getAllActions/:page', (req, res) => {
+  const { page } = req.params
+  const body = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = body
+
+  axios.post(`https://ellasos.herokuapp.com/api/actions/findActionsByCountryWithPagination/${page}`, data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
+    })
+})
+app.post('/createNewAction', (req, res) => {
+  const body = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = { ...body }
+  axios.post('https://ellasos.herokuapp.com/api/actions/create', data, headers)
+    .then(
+      response => {
+        console.log(response)
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      console.log(e)
+      res.json({
+        error: e.response.data
+      })
+    })
+})
+app.put('/updateAction/:actionID', (req, res) => {
+  const { actionID } = req.params
+  const { question, answer } = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = { question, answer, country: null }
+  axios.put(`https://ellasos.herokuapp.com/api/actions/update/${actionID}`, data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
+    })
+})
+app.delete('/deleteAction/:actionID', (req, res) => {
+  const { actionID } = req.params
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  axios.delete(`https://ellasos.herokuapp.com/api/actions/delete/${actionID}`, headers)
     .then(
       response => {
         res.json(response.data)

@@ -9,7 +9,7 @@
       <div class="profile">
         <img src="@/assets/images/default-profile.png" />
       </div>
-      <p>{{ currentU.email }}</p>
+      <p class="emailHeader">{{ currentU.email }}</p>
     </nuxt-link>
   </header>
 </template>
@@ -51,6 +51,9 @@ export default {
     user-select: none;
     cursor: pointer;
   }
+  .emailHeader {
+    display: none;
+  }
 }
 @media (min-width: 1000px) {
   .dashboard {
@@ -65,6 +68,9 @@ export default {
   .menuResponsive {
     user-select: none;
     display: none;
+  }
+  .emailHeader {
+    display: grid;
   }
 }
 header {
