@@ -71,28 +71,11 @@ app.post('/client/login', (req, res) => {
       })
     })
 })
-app.get('/getClient/:id', (req, res) => {
-  const { id } = req.params
-  const token = getToken(req, res)
-  const get = { headers: { Authorization: token } }
-  axios.get(`https://ellasos.herokuapp.com/api/client/getClientById/${id}`, get)
-    .then(
-      response => {
-        res.json(response.data)
-      }
-    )
-    .catch(e => {
-      res.statusCode = e.response.status
-      res.json({
-        error: e.message
-      })
-    })
-})
 app.get('/getAdmin/:id', (req, res) => {
   const { id } = req.params
   const token = getToken(req, res)
   const get = { headers: { Authorization: token } }
-  axios.get(`https://ellasos.herokuapp.com/api/admin/getAdminById/${id}`, get)
+  axios.get(`https://ellasos.herokuapp.com/api/admin/findAdminById/${id}`, get)
     .then(
       response => {
         res.json(response.data)
@@ -381,13 +364,14 @@ app.post('/createNewAction', (req, res) => {
 })
 app.put('/updateAction/:actionID', (req, res) => {
   const { actionID } = req.params
-  const { question, answer } = req.body
+  const { name, content } = req.body
   const token = getToken(req, res)
   const headers = {
     headers:
       { authorization: token }
   }
-  const data = { question, answer, country: null }
+  const data = { name, content, country: null }
+  console.log(data)
   axios.put(`https://ellasos.herokuapp.com/api/actions/update/${actionID}`, data, headers)
     .then(
       response => {

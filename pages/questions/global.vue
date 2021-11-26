@@ -56,7 +56,7 @@
               <input
                 v-model="currentQuestions[indexQuestion].question"
                 class="questionInput"
-                @blur="questionSelected = question;showToast();confirmChangeQuestion()"
+                @blur="questionSelected = question;showToast();confirmChangeQuestion('question')"
               />
             </th>
             <th>
@@ -73,7 +73,7 @@
               <textarea
                 v-model="question.answer"
                 class="answerInput"
-                @blur="questionSelected = question;confirmChangeQuestion()"
+                @blur="questionSelected = question;confirmChangeQuestion('answer')"
               />
             </td>
           </tr>
@@ -260,12 +260,11 @@ export default {
       }
     },
 
-    confirmChangeQuestion () {
+    confirmChangeQuestion (type) {
       let body = this.questionSelected
-      const index = this.currentQuestions.findIndex(q => q.id === this.questionSelected.id)
-      if (this.currentQuestions[index].question === this.questionSelected.question) {
+      if (type === 'answer') {
         body = { ...this.questionSelected, question: null }
-      } else if (this.currentQuestions[index].answer === this.questionSelected.answer) {
+      } else if (type === 'question') {
         body = { ...this.questionSelected, answer: null }
       } else {
         body = { ...this.questionSelected }

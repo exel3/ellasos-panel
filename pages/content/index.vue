@@ -45,8 +45,8 @@
       <div class="titleCard"><p>Lista de contenidos</p></div>
     </article>
     <article
-      v-for="(actions, indexactions) in tableFilter"
-      :key="actions._id"
+      v-for="(action) in tableFilter"
+      :key="action.id"
       class="contentList"
     >
       <table>
@@ -54,15 +54,15 @@
           <tr>
             <th>
               <input
-                v-model="currentActions[indexactions].name"
+                v-model="action.name"
                 class="actionsInput"
-                @blur="actionselected = actions;showToast();confirmChangeactions()"
+                @blur="actionselected = action;showToast();confirmChangeactions('name')"
               />
             </th>
             <th>
               <img
                 src="@/assets/icons/deleteGray.svg"
-                @click="showDeleteModal = true; actionselected = actions"
+                @click="showDeleteModal = true; actionselected = action"
               />
             </th>
           </tr>
@@ -71,9 +71,9 @@
           <tr>
             <td>
               <textarea
-                v-model="actions.content"
+                v-model="action.content"
                 class="contentInput"
-                @blur="actionselected = actions;confirmChangeactions()"
+                @blur="actionselected = action;confirmChangeactions('content')"
               />
             </td>
           </tr>
@@ -172,8 +172,8 @@ export default {
       let body = {}
       this.user.isMain ? body = { country: this.countrySelected.id } : body = { country: this.user.country }
       await this.$axios.$post('/api/getAllActions/0', body).then(response => {
-        this.currentActions = response.actions
-        this.tableFilter = response.actions
+        this.currentActions = [...response.actions]
+        this.tableFilter = [...response.actions]
         this.loadingMode = false
       })
         .catch((e) => {
@@ -232,9 +232,9 @@ export default {
         // this.currentActions.push(temporalActions)
         const body = temporalActions
         await this.$axios
-          .$post('/api/createNewActions', body)
+          .$post('/api/createNewAction', body)
           .then((res) => {
-            this.tableFilter.push(res.actions)
+            this.tableFilter.push(res.action)
             this.$toasted.show('Cambios guardados', {
               theme: 'toasted-primary',
               position: 'top-right',
@@ -260,12 +260,11 @@ export default {
       }
     },
 
-    confirmChangeactions () {
+    confirmChangeactions (type) {
       let body = this.actionselected
-      const index = this.currentActions.findIndex(q => q.id === this.actionselected.id)
-      if (this.currentActions[index].name === this.actionselected.name) {
+      if (type === 'content') {
         body = { ...this.actionselected, name: null }
-      } else if (this.currentActions[index].content === this.actionselected.content) {
+      } else if (type === 'name') {
         body = { ...this.actionselected, content: null }
       } else {
         body = { ...this.actionselected }
@@ -281,7 +280,7 @@ export default {
         })
       } else {
         this.$axios
-          .$put(`/api/updateActions/${this.actionselected.id}`, body)
+          .$put(`/api/updateAction/${this.actionselected.id}`, body)
           .then((res) =>
             this.$toasted.show('Cambios guardados', {
               theme: 'toasted-primary',
@@ -314,7 +313,7 @@ export default {
           position: 'top-right',
           duration: 2000
         })
-        await this.$axios.$delete(`/api/deleteActions/${this.actionselected.id}`)
+        await this.$axios.$delete(`/api/deleteAction/${this.actionselected.id}`)
           .then(response =>
             this.$toasted.show('Contenido borrado', {
               theme: 'toasted-primary',

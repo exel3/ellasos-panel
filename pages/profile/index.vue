@@ -6,15 +6,11 @@
         <form>
           <div>
           <label for="emailAddress">Email</label>
-          <input id="emailAddress" v-model="currentUser.emailAddress" type="email" autocomplete="off" :disabled="loadingMode">
+          <input id="emailAddress" v-model="currentUser.email" type="email" autocomplete="off" :disabled="loadingMode">
           </div>
           <div>
           <label for="contraseña">Contraseña</label>
           <input id="contraseña" v-model="currentUser.password"  placeholder="No visible" type="text"  autocomplete="off" :disabled="loadingMode">
-          </div>
-           <div>
-          <label for="usuario">Usuario</label>
-          <input id="usuario"  v-model="currentUser.username" type="text" name="currentUser" autocomplete="off" :disabled="loadingMode">
           </div>
         </form>
       </div>
@@ -28,14 +24,14 @@
 <script>
 import DeleteModal from '@/components/users/DeleteModal.vue'
 export default {
-  name: 'Profile',
+  name: 'ProfileIndex',
   components: {
     DeleteModal
   },
   data: () => ({
     loadingMode: false,
     user: {},
-    currentUser: { username: '', emailAddress: '', password: '', id: null },
+    currentUser: { email: '', password: '', id: null },
     showDeleteModal: false
   }),
   fetch () {
@@ -43,11 +39,7 @@ export default {
       .$get('/api/getUser')
       .then((response) => {
         this.user = response
-        if (this.user.type === 'admin') {
-          this.getAdmin()
-        } else {
-          this.getClient()
-        }
+        this.getAdmin()
       })
       .catch((e) => {
         this.$toasted.show(`Error recuperando los datos de usuario: ${e}`, {
@@ -64,20 +56,6 @@ export default {
         .$get(`/api/getAdmin/${this.user.id}`)
         .then((res) => {
           this.currentUser = res.admin
-        })
-        .catch((e) => {
-          this.$toasted.show(`Error al recuperar usuario: ${e}`, {
-            theme: 'toasted-primary',
-            position: 'top-right',
-            duration: 5000
-          })
-        })
-    },
-    getClient () {
-      this.$axios
-        .$get(`/api/getClient/${this.user.id}`)
-        .then((res) => {
-          this.currentUser = res.client
         })
         .catch((e) => {
           this.$toasted.show(`Error al recuperar usuario: ${e}`, {

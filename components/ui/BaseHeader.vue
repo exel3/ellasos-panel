@@ -1,7 +1,7 @@
 <template>
   <header>
     <div class="menuResponsive" @click="$emit('click:responsive')"><img src="@/assets/icons/menu.svg" /></div>
-    <nuxt-link to="/locals" class="logoAndTitle">
+    <nuxt-link to="/buttons" class="logoAndTitle">
       <div class="dashboard">Dashboard</div>
       <h1></h1>
     </nuxt-link>
