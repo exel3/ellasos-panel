@@ -2,49 +2,9 @@
 <Loading v-if="$fetchState.pending" class="fetchState" />
   <p v-else-if="$fetchState.error" class="fetchState">Error al cargar los datos</p>
   <section v-else>
-    <article class="newUser">
-      <div class="titleCard"><p>Agregar nuevo dueño</p></div>
-      <div class="contentCard">
-        <form>
-          <div>
-          <label for="emailAddress">Email</label>
-          <input id="emailAddress" v-model="newUser.emailAddress" type="emailAddress" :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="addNewUser">
-          </div>
-          <div>
-          <label for="contraseña">Contraseña</label>
-          <input id="contraseña" v-model="newUser.password" type="text"  :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="addNewUser">
-          </div>
-           <div>
-          <label for="usuario">Usuario</label>
-          <input id="usuario"  v-model="newUser.username" type="text" name="newUser" :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="addNewUser">
-          </div>
-             <div
-        class="selectContainer"
-      >
-        <label for="owner">Permiso para editar preguntas:</label>
-        <select
-          id="owner"
-          class="selectOwner"
-          name="owner"
-          @change="setPermission($event.target.value)"
-        >
-          <option value="true">
-            Si
-          </option>
-          <option selected value="false">
-            No
-          </option>
-        </select>
-      </div>
-        </form>
-      </div>
-      <div class="containerAddBtn">
-        <button :disabled="loadingMode" @click.prevent="addNewUser">Agregar</button>
-      </div>
-    </article>
     <article class="userList">
        <div class="titleCard">
-         <p>Lista de dueños</p>
+         <p>Lista de usuarios</p>
           <div class="searchContainer">
           <div class="inputContainer">
             <img class="searchIcon" src="@/assets/icons/search.svg" />
@@ -71,26 +31,28 @@
      <table>
 <thead>
 <tr>
-<th>Usuario</th>
-<th>Contraseña</th>
 <th>Email</th>
-    <th>Opciones</th>
+<th>Contraseña</th>
+<th>Nombre</th>
+<th>Pais</th>
+<th>Opciones</th>
 </tr>
 </thead>
 <tbody>
-<BaseRow v-for="user in tableFilter"
-:key="user.id"
+<BaseRow v-for="admin in tableFilter"
+:key="admin.id"
+:admin="admin"
 :user="user"
-@click="showDeleteModal = true; userSelected = user"
-@click:delete="showDeleteModal=true; userSelected=user"
-@click:edit="showEditModal=true; userSelected=user"
+@click="showDeleteModal = true; userSelected = admin"
+@click:delete="showDeleteModal=true; userSelected=admin"
+@click:edit="showEditModal=true; userSelected=admin"
 />
 </tbody>
 
 </table>
   </div>
     </article>
-    <EditModal v-if="showEditModal" :user="userSelected" @click:cancel="showEditModal=false" @update:user="updateUser($event); showEditModal=false" @cancel:click="showEditModal=false"  />
+    <EditModal v-if="showEditModal" :user="userSelected" :countries="countries" @click:cancel="showEditModal=false" @update:user="updateUser($event); showEditModal=false" @cancel:click="showEditModal=false"  />
     <DeleteModal v-if="showDeleteModal" @delete:user="deleteUser" @cancel:delete="showDeleteModal = false"/>
   </section>
 </template>
@@ -108,24 +70,49 @@ export default {
     Loading
   },
   data: () => ({
+    user: {},
     currentUsers: [],
     userSelected: {},
-    newUser: { username: '', emailAddress: '', password: '', id: null, permissionForQuestion: false },
+    newUser: { namesAndSurname: '', email: '', password: '', id: null, avatar: null },
     showDeleteModal: false,
     showEditModal: false,
     searchValue: '',
+    countries: [],
     tableFilter: [],
-    loadingMode: false
+    loadingMode: false,
+    countrySelected: {}
   }),
   async fetch () {
     await this.$axios
-      .$get('/api/getAllClients')
+      .$get('/api/getAllusers')
       .then((response) => {
-        this.currentUsers = response.clients
-        this.tableFilter = response.clients
+        this.currentUsers = response.users
+        this.tableFilter = response.users
+        this.$axios.$get('/api/getAllCountries')
+          .then(async (response) => {
+            this.countries = response.countries
+            await this.$axios.$get('/api/getUser')
+              .then((response) => {
+                this.user = response
+              })
+              .catch((e) => {
+                this.$toasted.show(`Error al recuperar el usuario actual: ${e}`, {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 10000
+                })
+              })
+          })
+          .catch((e) => {
+            this.$toasted.show(`Error al recuperar los paises: ${e}`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 10000
+            })
+          })
       })
       .catch((e) => {
-        this.$toasted.show(`Error al recuperar los clientes: ${e}`, {
+        this.$toasted.show(`Error al recuperar los usuarios: ${e}`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 10000
@@ -136,14 +123,14 @@ export default {
     async getUsers () {
       this.loadingMode = true
       await this.$axios
-        .$get('/api/getAllClients')
+        .$get('/api/getAllUsers')
         .then((response) => {
-          this.currentUsers = response.clients
-          this.tableFilter = response.clients
+          this.currentUsers = response.users
+          this.tableFilter = response.users
           this.loadingMode = false
         })
         .catch((e) => {
-          this.$toasted.show(`Error al recuperar los clientes: ${e}`, {
+          this.$toasted.show(`Error al recuperar los usuarios: ${e}`, {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 10000
@@ -151,43 +138,23 @@ export default {
           this.loadingMode = false
         })
     },
-    setPermission (permission) {
-      const parseEvent = permission === 'true'
-      this.newUser.permissionForQuestions = parseEvent
-    },
     searchFilter () {
       this.tableFilter = this.currentUsers.filter(
         (u) =>
-          (u.username
-            ? u.username.toLowerCase().includes(this.searchValue.toLowerCase())
-            : false) ||
-          (u.emailAddress
-            ? u.emailAddress
-              .toLowerCase()
-              .includes(this.searchValue.toLowerCase())
-            : false)
+          (u.namesAndSurname ? u.namesAndSurname.toLowerCase().includes(this.searchValue.toLowerCase()) : false) ||
+          (u.email ? u.email.toLowerCase().includes(this.searchValue.toLowerCase()) : false)
       )
+    },
+    setCountrySelected (countryName) {
+      this.countrySelected = this.countries.find((o) => countryName === o.name)
     },
     addNewUser () {
       this.loadingMode = true
-      const regEmailAddress =
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      const regUser =
-     /^(?=[a-zA-Z0-9._\u00F1\u00D1]{6,20}$)(?!.*[_.]{2})[^_.].*[^_.]$/
+      const regemail =
+       /^[\w-.]+@([\w-]+.)+[\w-]{2,4}$/
       const regPassword =
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}/
-
-      if (!regUser.test(this.newUser.username)) {
-        this.$toasted.show(
-          'El nombre de usuario debe contener entre 6 y 20 caracteres, y no contener espacios',
-          {
-            theme: 'toasted-primary',
-            position: 'top-right',
-            duration: 5000
-          }
-        )
-        this.loadingMode = false
-      } else if (!regPassword.test(this.newUser.password)) {
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}/
+      if (!regPassword.test(this.newUser.password)) {
         this.$toasted.show(
           'La contraseña debe contener mínimo 8 y máximo 16 caracteres, al menos una letra mayúscula, una letra minúscula, un número, un carácter especial y no contener espacios',
           {
@@ -197,25 +164,33 @@ export default {
           }
         )
         this.loadingMode = false
-      } else if (!regEmailAddress.test(this.newUser.emailAddress)) {
+      } else if (!regemail.test(this.newUser.email)) {
         this.$toasted.show('Formato de email incorrecto', {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000
         })
         this.loadingMode = false
+      } else if (!this.countrySelected) {
+        this.$toasted.show('Seleccione un pais', {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000
+        })
+        this.loadingMode = false
       } else {
-        const { username, emailAddress, password, permissionForQuestions } = this.newUser
-        const body = { username, emailAddress, password, permissionForQuestions }
+        const { email, password, namesAndSurname, avatar } = this.newUser
+        const country = this.countrySelected.id
+        const body = { namesAndSurname, email, password, country, avatar }
         this.$toasted.show('Guardando cambios..', {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000
         })
         this.$axios
-          .$post('/api/createNewClient', body)
+          .$post('/api/createNewAdmin', body)
           .then((res) => {
-            this.currentUsers.push(res.client)
+            this.currentUsers.push(res.admin)
             this.$toasted.show('Cambios guardados', {
               theme: 'toasted-primary',
               position: 'top-right',
@@ -226,7 +201,7 @@ export default {
           .catch((e) => {
             if (
               JSON.stringify(e.response.data.error['Errors List']) ===
-              '{"username error":"Username in use"}'
+              '{"namesAndSurname error":"namesAndSurname in use"}'
             ) {
               this.$toasted.show('ERROR: Nombre de usuario en uso', {
                 theme: 'toasted-primary',
@@ -235,7 +210,7 @@ export default {
               })
             } else if (
               JSON.stringify(e.response.data.error['Errors List']) ===
-              '{"emailAddress error":"EmailAddress in use"}'
+              '{"email error":"email in use"}'
             ) {
               this.$toasted.show('ERROR: Email en uso', {
                 theme: 'toasted-primary',
@@ -244,7 +219,7 @@ export default {
               })
             } else {
               this.$toasted.show(
-                `Error al crear cliente: ${JSON.stringify(
+                `Error al crear administrador: ${JSON.stringify(
                   e.response.data.error['Errors List']
                 )}`,
                 {
@@ -260,31 +235,30 @@ export default {
     },
     updateUser (userC) {
       this.loadingMode = true
-      const clientID = userC.id
-      const body = {
-        username: userC.username,
-        emailAddress: userC.emailAddress,
-        password: userC.password,
-        permissionForQuestions: userC.permissionForQuestions
-      }
+      const AdminID = userC.id
+      const body = { ...userC }
       console.log(body)
+      body.avatar = !body.avatar ? '' : body.avatar
       this.$axios
-        .$put(`/api/updateClient/${clientID}`, body)
+        .$put(`/api/updateAdmin/${AdminID}`, body)
         .then((res) => {
-          this.newUser.id = res.id
-          this.currentUsers.push(this.newUser)
+          const userUpdated = res.admin
+          userUpdated.country = this.countries.find(c => res.admin.country === c.id)
+          const index = this.tableFilter.findIndex(u => u.id === userUpdated.id)
+          this.tableFilter[index] = userUpdated
+          // this.currentUsers.push(this.newUser)
           this.$toasted.show('Cambios guardados', {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 5000
           })
-          this.getUsers()
+          // this.getUsers()
           this.loadingMode = false
         })
         .catch((e) => {
           if (
             JSON.stringify(e.response.data.error['Errors List']) ===
-            '{"username error":"Username in use"}'
+            '{"namesAndSurname error":"namesAndSurname in use"}'
           ) {
             this.$toasted.show('ERROR: Nombre de usuario en uso', {
               theme: 'toasted-primary',
@@ -293,7 +267,7 @@ export default {
             })
           } else if (
             JSON.stringify(e.response.data.error['Errors List']) ===
-            '{"emailAddress error":"EmailAddress in use"}'
+            '{"email error":"email in use"}'
           ) {
             this.$toasted.show('ERROR: Email en uso', {
               theme: 'toasted-primary',
@@ -302,7 +276,7 @@ export default {
             })
           } else {
             this.$toasted.show(
-              `Error al actualizar cliente: ${JSON.stringify(
+              `Error al actualizar Admin: ${JSON.stringify(
                 e.response.data.error['Errors List']
               )}`,
               {
@@ -317,10 +291,10 @@ export default {
     },
     deleteUser () {
       this.loadingMode = true
-      const clientID = this.userSelected.id
+      const AdminID = this.userSelected.id
 
       this.$axios
-        .$delete(`/api/deleteClient/${clientID}`)
+        .$delete(`/api/deleteAdmin/${AdminID}`)
         .then((res) => {
           this.$toasted.show('Cambios guardados', {
             theme: 'toasted-primary',
@@ -336,7 +310,7 @@ export default {
         })
         .catch((e) => {
           this.$toasted.show(
-            `Error al borrar cliente: ${JSON.stringify(
+            `Error al borrar Admine: ${JSON.stringify(
               e.response.data.error['Errors List']
             )}`,
             {
@@ -423,28 +397,15 @@ article {
 }
 
 .bodyTableContainer {
-  overflow-y: scroll;
-  width: 100%;
-  height: 35rem;
+ overflow-y:scroll;
+ width: 100%;
+ height: 35rem;
 }
 .userList {
   height: 40rem;
-  overflow: hidden;
+   overflow: hidden;
 }
-.selectOwner {
-  width: 100%;
-  height: 2rem;
-  padding: 0 0.75rem;
-  font-weight: 400;
-  line-height: 1.5;
-  color: #656a6f;
-  background-color: #fff;
-  background-clip: padding-box;
-  border: 1px solid #dee2e6;
-  border-radius: 0.25rem;
-  box-shadow: 0 3px 2px rgb(233 236 239 / 5%);
-  box-sizing: border-box;
-}
+
 .titleCard {
   position: relative;
   padding: 1.25rem 1.5rem;
@@ -490,21 +451,6 @@ input {
   box-sizing: border-box;
 }
 
-.selectOwner {
-  width: 100%;
-  height: 2rem;
-  padding: 0 0.75rem;
-  font-weight: 400;
-  line-height: 1.5;
-  color: #656a6f;
-  background-color: #fff;
-  background-clip: padding-box;
-  border: 1px solid #dee2e6;
-  border-radius: 0.25rem;
-  box-shadow: 0 3px 2px rgb(233 236 239 / 5%);
-  box-sizing: border-box;
-}
-
 .contentCard {
   position: relative;
   box-sizing: border-box;
@@ -526,6 +472,25 @@ input {
   padding-bottom: 1.25rem;
   padding-right: 1.5rem;
   box-sizing: border-box;
+}
+
+.selectOwner {
+  width: 100%;
+  height: 2rem;
+  padding: 0 0.75rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #656a6f;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  box-shadow: 0 3px 2px rgb(233 236 239 / 5%);
+  box-sizing: border-box;
+}
+
+.selectContainer {
+  padding: 1rem;
 }
 
 .containerAddBtn button {

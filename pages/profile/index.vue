@@ -5,12 +5,12 @@
       <div class="contentCard">
         <form>
           <div>
-          <label for="emailAddress">Email</label>
-          <input id="emailAddress" v-model="currentUser.email" type="email" autocomplete="off" :disabled="loadingMode">
+          <label for="emailAddress">Nombre y apellidos</label>
+          <input id="emailAddress" v-model="currentUser.namesAndSurname" type="email" autocomplete="off" :disabled="loadingMode">
           </div>
           <div>
           <label for="contraseña">Contraseña</label>
-          <input id="contraseña" v-model="currentUser.password"  placeholder="No visible" type="text"  autocomplete="off" :disabled="loadingMode">
+          <input id="contraseña" v-model="newPassword"  placeholder="No visible" type="text"  autocomplete="off" :disabled="loadingMode">
           </div>
         </form>
       </div>
@@ -31,7 +31,8 @@ export default {
   data: () => ({
     loadingMode: false,
     user: {},
-    currentUser: { email: '', password: '', id: null },
+    currentUser: { namesAndSurname: '', password: '', id: null },
+    newPassword: '',
     showDeleteModal: false
   }),
   fetch () {
@@ -51,8 +52,8 @@ export default {
   },
 
   methods: {
-    getAdmin () {
-      this.$axios
+    async getAdmin () {
+      await this.$axios
         .$get(`/api/getAdmin/${this.user.id}`)
         .then((res) => {
           this.currentUser = res.admin
@@ -66,45 +67,43 @@ export default {
         })
     },
     updateProfile () {
-      if (this.user.type === 'admin') {
-        this.loadingMode = true
-        const AdminID = this.currentUser.id
-        const body = {
-          username: this.currentUser.username,
-          emailAddress: this.currentUser.emailAddress,
-          password: this.currentUser.password
-        }
-        this.$axios
-          .$put(`/api/updateAdmin/${AdminID}`, body)
-          .then((res) => {
-            this.$toasted.show('Cambios guardados', {
+      this.loadingMode = true
+      const AdminID = this.currentUser.id
+      const body = {
+        namesAndSurname: this.currentUser.namesAndSurname,
+        password: this.newPassword !== '' ? this.newPassword : null
+      }
+      this.$axios
+        .$put(`/api/updateAdmin/${AdminID}`, body)
+        .then((res) => {
+          this.$toasted.show('Cambios guardados', {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000
+          })
+          this.loadingMode = false
+        })
+        .catch((e) => {
+          if (
+            JSON.stringify(e.response.data.error['Errors List']) ===
+              '{"username error":"Username in use"}'
+          ) {
+            this.$toasted.show('ERROR: Nombre de usuario en uso', {
               theme: 'toasted-primary',
               position: 'top-right',
-              duration: 5000
+              duration: 10000
             })
-            this.loadingMode = false
-          })
-          .catch((e) => {
-            if (
-              JSON.stringify(e.response.data.error['Errors List']) ===
-              '{"username error":"Username in use"}'
-            ) {
-              this.$toasted.show('ERROR: Nombre de usuario en uso', {
-                theme: 'toasted-primary',
-                position: 'top-right',
-                duration: 10000
-              })
-            } else if (
-              JSON.stringify(e.response.data.error['Errors List']) ===
+          } else if (
+            JSON.stringify(e.response.data.error['Errors List']) ===
               '{"emailAddress error":"EmailAddress in use"}'
-            ) {
-              this.$toasted.show('ERROR: Email en uso', {
-                theme: 'toasted-primary',
-                position: 'top-right',
-                duration: 10000
-              })
-            } else {
-              this.$toasted.show(
+          ) {
+            this.$toasted.show('ERROR: Email en uso', {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 10000
+            })
+          } else {
+            this.$toasted.show(
                 `Error al actualizar Admin: ${JSON.stringify(
                   e.response.data.error['Errors List']
                 )}`,
@@ -113,62 +112,10 @@ export default {
                   position: 'top-right',
                   duration: 5000
                 }
-              )
-            }
-            this.loadingMode = false
-          })
-      } else {
-        this.loadingMode = true
-        const clientID = this.currentUser.id
-        const body = {
-          username: this.currentUser.username,
-          emailAddress: this.currentUser.emailAddress,
-          password: this.currentUser.password
-        }
-        this.$axios
-          .$put(`/api/updateClient/${clientID}`, body)
-          .then((res) => {
-            this.$toasted.show('Cambios guardados', {
-              theme: 'toasted-primary',
-              position: 'top-right',
-              duration: 5000
-            })
-            this.loadingMode = false
-          })
-          .catch((e) => {
-            if (
-              JSON.stringify(e.response.data.error['Errors List']) ===
-              '{"username error":"Username in use"}'
-            ) {
-              this.$toasted.show('ERROR: Nombre de usuario en uso', {
-                theme: 'toasted-primary',
-                position: 'top-right',
-                duration: 10000
-              })
-            } else if (
-              JSON.stringify(e.response.data.error['Errors List']) ===
-              '{"emailAddress error":"EmailAddress in use"}'
-            ) {
-              this.$toasted.show('ERROR: Email en uso', {
-                theme: 'toasted-primary',
-                position: 'top-right',
-                duration: 10000
-              })
-            } else {
-              this.$toasted.show(
-                `Error al actualizar cliente: ${JSON.stringify(
-                  e.response.data.error['Errors List']
-                )}`,
-                {
-                  theme: 'toasted-primary',
-                  position: 'top-right',
-                  duration: 5000
-                }
-              )
-            }
-            this.loadingMode = false
-          })
-      }
+            )
+          }
+          this.loadingMode = false
+        })
     }
   }
 }

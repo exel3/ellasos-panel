@@ -75,7 +75,7 @@ app.get('/getAdmin/:id', (req, res) => {
   const { id } = req.params
   const token = getToken(req, res)
   const get = { headers: { Authorization: token } }
-  axios.get(`https://ellasos.herokuapp.com/api/admin/findAdminById/${id}`, get)
+  axios.get(`https://ellasos.herokuapp.com/api/admins/findAdminById/${id}`, get)
     .then(
       response => {
         res.json(response.data)
@@ -156,8 +156,6 @@ app.put('/updateAdmin/:adminID', (req, res) => {
       { authorization: token }
   }
   const data = { namesAndSurname, password, country, avatar }
-  console.log(adminID)
-  console.log(data)
   axios.put(`https://ellasos.herokuapp.com/api/admins/update/${adminID}`, data, headers)
     .then(
       response => {
@@ -218,6 +216,23 @@ app.post('/admin/login', (req, res) => {
         })
       }
     })
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
+    })
+})
+app.get('/getAllUsers', (req, res) => {
+  const page = 1
+  const token = getToken(req, res)
+  const get = { headers: { Authorization: token } }
+  axios.get(`https://ellasos.herokuapp.com/api/users/findAllUsers/${page}`, get)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
     .catch(e => {
       res.statusCode = e.response.status
       res.json({
