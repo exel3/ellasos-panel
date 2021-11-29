@@ -138,6 +138,7 @@ app.put('/updateCountry/:countryID', (req, res) => {
       { authorization: token }
   }
   const data = { name, secondaryId }
+  console.log(data, countryID)
   axios.put(`https://ellasos.herokuapp.com/api/countries/update/${countryID}`, data, headers)
     .then(
       response => {

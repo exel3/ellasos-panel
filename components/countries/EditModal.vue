@@ -1,36 +1,17 @@
 <template>
   <div class="editModalContainer">
     <div class="editModal">
-      <label>Correo electronico:</label>
-      <BaseInput
-        :valueinput="user.email"
-        :status=true
-        @input="newUser.email = $event"
-      />
-      <label>Password:</label>
-      <BaseInput placeholder="No visible" @input="newUser.password = $event" />
-         <label>Nombre y apellido:</label>
-      <BaseInput :valueinput="user.namesAndSurname" @input="newUser.namesAndSurname = $event" />
- <div class="selectContainer">
-          <label for="owner">Pais</label>
-        <select id="owner" class="selectOwner" name="owner"  @change="setCountrySelected($event.target.value)">
-           <option disabled selected value></option>
-          <option
-            v-for="country in countries"
-            :key="'dropBox' + country.id"
-            :value="country.name"
-          >
-            {{country.name}}
-          </option>
-        </select>
-          </div>
-      <div class="tdOptionsUser">
+         <label>Nombre:</label>
+      <BaseInput :valueinput="country.name" @input="newCountry.name = $event" />
+            <label>Identificador:</label>
+      <BaseInput :valueinput="country.secondaryId" @input="newCountry.secondaryId = $event" />
+      <div class="tdOptionscountry">
         <BaseButtonEdit
           backcolor="#5e72e4"
           bordercolor="#5e72e4"
           text="Confirmar"
           color="white"
-          @click="updateUser()"
+          @click="updateCountry()"
         />
         <BaseButtonEdit
           backcolor="white"
@@ -45,83 +26,58 @@
   </div>
 </template>
 <script>
-import BaseInput from '@/components/users/BaseInput.vue'
-import BaseButtonEdit from '@/components/users/BaseButtonEdit.vue'
+import BaseInput from '@/components/countries/BaseInput.vue'
+import BaseButtonEdit from '@/components/countries/BaseButtonEdit.vue'
 export default {
-  name: 'EditModalUser',
+  name: 'EditModalCountry',
   components: {
     BaseInput,
     BaseButtonEdit
   },
   props: {
-    user: {
+    country: {
       type: Object,
-      required: true
-    },
-    countries: {
-      type: Array,
       required: true
     }
   },
   data: () => ({
-    newUser: {
-      password: '',
-      email: '',
-      namesAndSurname: '',
-      country: ''
+    newCountry: {
+      name: '',
+      secondaryId: ''
     },
     countrySelected: {}
   }),
-  mounted () {
-    const user = this.user
-    this.newUser = { ...user, password: '' }
-  },
   methods: {
     clickCancel () {
       this.$emit('cancel:click')
     },
-    setCountrySelected (countryName) {
-      console.log(countryName)
-      this.countrySelected = this.countries.find((o) => o.name === countryName)
-      console.log(this.countrySelected)
-    },
-    updateUser () {
-      const regemail =
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      const regPassword =
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}/
-
-      if (
-        this.newUser.password !== ''
-          ? !regPassword.test(this.newUser.password)
-          : false
-      ) {
+    updateCountry () {
+      const regCountry = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u
+      if (this.newCountry.name === '') {
+        this.newCountry.name = this.country.name
+      }
+      if (this.newCountry.secondaryId === '') {
+        this.newCountry.name = this.country.secondaryId
+      }
+      if (!regCountry.test(this.newCountry.name)) {
         this.$toasted.show(
-          'La contraseña debe contener mínimo 8 y máximo 16 caracteres, al menos una letra mayúscula, una letra minúscula, un número, un carácter especial y no contener espacios',
+          'Formato de nombre de pais incorrecto',
           {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 10000
           }
         )
-      } else if (!regemail.test(this.newUser.email)) {
-        this.$toasted.show('Formato de email incorrecto', {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000
-        })
+        this.loadingMode = false
       } else {
-        if (this.newUser.password === '') {
-          this.newUser.password = null
+        if (this.newCountry.secondaryId === '') {
+          this.newCountry.secondaryId = null
         }
-        if (this.newUser.namesAndSurname === '') {
-          this.newUser.namesAndSurname = null
+        if (this.newCountry.name === '') {
+          this.newCountry.name = null
         }
-        if (this.countrySelected.name) { this.newUser.country = this.countrySelected.id } else {
-          this.newUser.country = this.user.country.id
-        }
-        console.log(this.newUser.country)
-        this.$emit('update:user', this.newUser)
+        this.newCountry.id = this.country.id
+        this.$emit('update:country', this.newCountry)
       }
     }
   }
@@ -186,7 +142,7 @@ export default {
   box-sizing: border-box;
 }
 
-.tdOptionsUser {
+.tdOptionscountry {
   display: grid;
   grid-auto-flow: row;
   gap: 1rem;

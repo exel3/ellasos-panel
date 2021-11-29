@@ -2,7 +2,7 @@
   <tr>
            <td><p>{{ country.name }}</p></td>
            <td><p>{{ country.secondaryId }}</p></td>
-    <td v-if="user.isMain" class="tdOptions">
+    <td class="tdOptions">
       <BaseButtonTable
         backcolor="#f7fafc"
         bordercolor="#f7fafc"

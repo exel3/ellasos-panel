@@ -67,8 +67,8 @@
 </table>
   </div>
     </article>
-    <EditModal v-if="showEditModal" :user="countrySelected" :countries="countries" @click:cancel="showEditModal=false" @update:user="updateUser($event); showEditModal=false" @cancel:click="showEditModal=false"  />
-    <DeleteModal v-if="showDeleteModal" @delete:user="deleteUser" @cancel:delete="showDeleteModal = false"/>
+    <EditModal v-if="showEditModal" :country="countrySelected" @click:cancel="showEditModal=false" @update:country="updateCountry($event); showEditModal=false" @cancel:click="showEditModal=false"  />
+    <DeleteModal v-if="showDeleteModal" @delete:user="deleteCountry" @cancel:delete="showDeleteModal = false"/>
   </section>
 </template>
 <script>
@@ -97,16 +97,16 @@ export default {
   }),
   async fetch () {
     await this.$axios
-    this.$axios.$get('/api/getAllCountries')
+    await this.$axios.$get('/api/getUser')
       .then(async (response) => {
-        this.tableFilter = response.countries
-        this.currentCountries = response.countries
-        await this.$axios.$get('/api/getUser')
+        this.user = response
+        await this.$axios.$get('/api/getAllCountries')
           .then((response) => {
-            this.user = response
+            this.tableFilter = response.countries
+            this.currentCountries = response.countries
           })
           .catch((e) => {
-            this.$toasted.show(`Error al recuperar el usuario actual: ${e}`, {
+            this.$toasted.show(`Error al recuperar paises: ${e}`, {
               theme: 'toasted-primary',
               position: 'top-right',
               duration: 10000
@@ -114,7 +114,7 @@ export default {
           })
       })
       .catch((e) => {
-        this.$toasted.show(`Error al recuperar los paises: ${e}`, {
+        this.$toasted.show(`Error al recuperar el usuario actual: ${e}`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 10000
@@ -172,7 +172,7 @@ export default {
         this.$axios
           .$post('/api/createNewCountry', body)
           .then((res) => {
-            this.currentCountries.push(res.admin)
+            this.currentCountries.push(res.country)
             this.$toasted.show('Cambios guardados', {
               theme: 'toasted-primary',
               position: 'top-right',
@@ -215,10 +215,11 @@ export default {
           })
       }
     },
-    updateUser (countryC) {
+    updateCountry (countryC) {
       this.loadingMode = true
       const countryID = countryC.id
       const body = { ...countryC }
+      console.log(countryC)
       this.$axios
         .$put(`/api/updateCountry/${countryID}`, body)
         .then((res) => {
@@ -255,7 +256,7 @@ export default {
             })
           } else {
             this.$toasted.show(
-              `Error al actualizar Admin: ${JSON.stringify(
+              `Error al actualizar pais: ${JSON.stringify(
                 e.response.data.error['Errors List']
               )}`,
               {
@@ -268,7 +269,7 @@ export default {
           this.loadingMode = false
         })
     },
-    deleteUser () {
+    deleteCountry () {
       this.loadingMode = true
       const countryID = this.countrySelected.id
 
@@ -289,7 +290,7 @@ export default {
         })
         .catch((e) => {
           this.$toasted.show(
-            `Error al borrar Admin: ${JSON.stringify(
+            `Error al borrar pais: ${JSON.stringify(
               e.response.data.error['Errors List']
             )}`,
             {
