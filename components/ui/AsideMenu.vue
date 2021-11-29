@@ -34,6 +34,15 @@
       mainurl="/profile"
       :options="[{title: 'Usuarios', url:'/users/users'}]"
     />
+        <ItemAsideMenu
+          v-if="user.isMain"
+      title="Paises"
+      imgsrc="country.svg"
+      mainurl="/countries"
+      :options="[
+        { title: 'Editar paises', url: '/countries' },
+      ]"
+    />
     <ItemAsideMenu
       title="Botones"
       imgsrc="button.svg"

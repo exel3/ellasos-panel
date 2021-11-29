@@ -163,9 +163,9 @@ export default {
       })
   },
   methods: {
-    setCountrySelected (countryName) {
+    async setCountrySelected (countryName) {
       this.countrySelected = this.countries.find((o) => countryName === o.name)
-      this.getGlobalQuestions()
+      await this.getGlobalQuestions()
     },
     async getGlobalQuestions () {
       this.loadingMode = true
@@ -303,6 +303,7 @@ export default {
     },
 
     async deleteQuestion () {
+      this.currentQuestions = [...this.tableFilter]
       this.currentQuestions = this.currentQuestions.filter(
         (q) => this.questionSelected.question !== q.question
       )

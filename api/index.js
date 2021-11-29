@@ -105,6 +105,72 @@ app.get('/getAllCountries', (req, res) => {
       })
     })
 })
+app.post('/createNewCountry', (req, res) => {
+  const body = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = { ...body }
+
+  axios.post('https://ellasos.herokuapp.com/api/countries/create', data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      console.log(e)
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
+    })
+})
+app.put('/updateCountry/:countryID', (req, res) => {
+  const { countryID } = req.params
+  const body = req.body
+  const { name, secondaryId } = body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = { name, secondaryId }
+  axios.put(`https://ellasos.herokuapp.com/api/countries/update/${countryID}`, data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
+    })
+})
+app.delete('/deleteCountry/:countryID', (req, res) => {
+  const { countryID } = req.params
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  axios.delete(`https://ellasos.herokuapp.com/api/admins/delete/${countryID}`, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
+    })
+})
 app.get('/getAllAdmins', (req, res) => {
   const page = 1
   const token = getToken(req, res)
@@ -250,6 +316,7 @@ app.post('/getAllQuestions/:page', (req, res) => {
       { authorization: token }
   }
   const data = body
+  console.log(body)
 
   axios.post(`https://ellasos.herokuapp.com/api/questions/findQuestionsByCountryWithPagination/${page}`, data, headers)
     .then(

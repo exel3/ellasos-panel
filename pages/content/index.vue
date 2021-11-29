@@ -303,6 +303,7 @@ export default {
     },
 
     async deleteActions () {
+      this.currentActions = [...this.tableFilter]
       this.currentActions = this.currentActions.filter(
         (q) => this.actionselected.name !== q.name
       )
