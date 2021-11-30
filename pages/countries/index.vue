@@ -68,7 +68,7 @@
   </div>
     </article>
     <EditModal v-if="showEditModal" :country="countrySelected" @click:cancel="showEditModal=false" @update:country="updateCountry($event); showEditModal=false" @cancel:click="showEditModal=false"  />
-    <DeleteModal v-if="showDeleteModal" @delete:user="deleteCountry" @cancel:delete="showDeleteModal = false"/>
+    <DeleteModal v-if="showDeleteModal" @delete:country="deleteCountry" @cancel:delete="showDeleteModal = false"/>
   </section>
 </template>
 <script>
@@ -143,8 +143,8 @@ export default {
     searchFilter () {
       this.tableFilter = this.currentCountries.filter(
         (u) =>
-          (u.namesAndSurname ? u.namesAndSurname.toLowerCase().includes(this.searchValue.toLowerCase()) : false) ||
-          (u.email ? u.email.toLowerCase().includes(this.searchValue.toLowerCase()) : false)
+          (u.name ? u.name.toLowerCase().includes(this.searchValue.toLowerCase()) : false) ||
+          (u.secondaryId ? u.secondaryId.toLowerCase().includes(this.searchValue.toLowerCase()) : false)
       )
     },
     addnewCountry () {
@@ -154,6 +154,16 @@ export default {
       if (!regCountry.test(this.newCountry.name)) {
         this.$toasted.show(
           'Formato de nombre de pais incorrecto',
+          {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 10000
+          }
+        )
+        this.loadingMode = false
+      } else if (!regCountry.test(this.newCountry.secondaryId)) {
+        this.$toasted.show(
+          'Formato de identificador de pais incorrecto',
           {
             theme: 'toasted-primary',
             position: 'top-right',
@@ -183,7 +193,7 @@ export default {
           .catch((e) => {
             if (
               JSON.stringify(e.response.data.error['Errors List']) ===
-              '{"namesAndSurname error":"namesAndSurname in use"}'
+              '{"name error":"name in use"}'
             ) {
               this.$toasted.show('ERROR: Nombre de usuario en uso', {
                 theme: 'toasted-primary',
@@ -192,9 +202,9 @@ export default {
               })
             } else if (
               JSON.stringify(e.response.data.error['Errors List']) ===
-              '{"email error":"email in use"}'
+              '{"secondaryId error":"secondaryId in use"}'
             ) {
-              this.$toasted.show('ERROR: Email en uso', {
+              this.$toasted.show('ERROR: secondaryId en uso', {
                 theme: 'toasted-primary',
                 position: 'top-right',
                 duration: 10000
@@ -222,13 +232,14 @@ export default {
       const index = this.tableFilter.findIndex(c => countryC.id === c.id)
       const countryPrev = this.tableFilter[index]
       if (countryPrev.name === countryC.name) {
-        body = { secondaryId:countryC.secondaryId }
+        body = { secondaryId: countryC.secondaryId }
       }
       if (countryPrev.secondaryId === countryC.secondaryId) {
-        body = { name:countryC.name}
+        body = { name: countryC.name }
       }
-      const body = { ...countryC }
-      console.log(countryC)
+      if (countryPrev.name !== countryC.name && countryPrev.secondaryId !== countryC.secondaryId) {
+        body = { ...countryC }
+      }
       this.$axios
         .$put(`/api/updateCountry/${countryID}`, body)
         .then((res) => {
@@ -247,7 +258,7 @@ export default {
         .catch((e) => {
           if (
             JSON.stringify(e.response.data.error['Errors List']) ===
-            '{"namesAndSurname error":"namesAndSurname in use"}'
+            '{"name error":"name in use"}'
           ) {
             this.$toasted.show('ERROR: Nombre de usuario en uso', {
               theme: 'toasted-primary',
@@ -256,9 +267,9 @@ export default {
             })
           } else if (
             JSON.stringify(e.response.data.error['Errors List']) ===
-            '{"email error":"email in use"}'
+            '{"secondaryId error":"secondaryId in use"}'
           ) {
-            this.$toasted.show('ERROR: Email en uso', {
+            this.$toasted.show('ERROR: secondaryId en uso', {
               theme: 'toasted-primary',
               position: 'top-right',
               duration: 10000
@@ -386,7 +397,6 @@ article {
 }
 
 .bodyTableContainer {
- overflow-y:scroll;
  width: 100%;
  height: 35rem;
 }

@@ -5,12 +5,12 @@
       <div class="modalText">
         <h1>ADVERTENCIA</h1>
         <p>
-          Eliminar usuario borrará toda su informacion de la base de datos,
+          Eliminar pais borrará toda su informacion de la base de datos,
           ¿Desea continuar?
         </p>
       </div>
       <div class="modalButtons">
-        <button @click.prevent="$emit('delete:user')">Eliminar</button
+        <button @click.prevent="$emit('delete:country')">Eliminar</button
         ><button @click.prevent="$emit('cancel:delete')">Cancelar</button>
       </div>
     </div>

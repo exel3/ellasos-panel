@@ -131,13 +131,12 @@ app.post('/createNewCountry', (req, res) => {
 app.put('/updateCountry/:countryID', (req, res) => {
   const { countryID } = req.params
   const body = req.body
-  const { name, secondaryId } = body
   const token = getToken(req, res)
   const headers = {
     headers:
       { authorization: token }
   }
-  const data = { name, secondaryId }
+  const data = { ...body }
   console.log(data, countryID)
   axios.put(`https://ellasos.herokuapp.com/api/countries/update/${countryID}`, data, headers)
     .then(
@@ -159,7 +158,7 @@ app.delete('/deleteCountry/:countryID', (req, res) => {
     headers:
       { authorization: token }
   }
-  axios.delete(`https://ellasos.herokuapp.com/api/admins/delete/${countryID}`, headers)
+  axios.delete(`https://ellasos.herokuapp.com/api/countries/delete/${countryID}`, headers)
     .then(
       response => {
         res.json(response.data)
@@ -304,6 +303,49 @@ app.get('/getAllUsers', (req, res) => {
       res.statusCode = e.response.status
       res.json({
         error: e.message
+      })
+    })
+})
+app.put('/updateUser/:userID', (req, res) => {
+  const { userID } = req.params
+  const body = req.body
+  const { namesAndSurname, password, country, avatar } = body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = { namesAndSurname, password, country, avatar }
+  axios.put(`https://ellasos.herokuapp.com/api/users/update/${userID}`, data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
+    })
+})
+app.delete('/deleteUser/:userID', (req, res) => {
+  const { userID } = req.params
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  axios.delete(`https://ellasos.herokuapp.com/api/users/delete/${userID}`, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
       })
     })
 })

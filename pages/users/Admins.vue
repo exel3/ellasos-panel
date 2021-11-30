@@ -432,7 +432,6 @@ article {
 }
 
 .bodyTableContainer {
- overflow-y:scroll;
  width: 100%;
  height: 35rem;
 }

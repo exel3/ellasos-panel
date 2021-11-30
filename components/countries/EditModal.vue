@@ -52,32 +52,54 @@ export default {
       this.$emit('cancel:click')
     },
     updateCountry () {
-      const regCountry = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u
       if (this.newCountry.name === '') {
         this.newCountry.name = this.country.name
       }
       if (this.newCountry.secondaryId === '') {
-        this.newCountry.name = this.country.secondaryId
+        this.newCountry.secondaryId = this.country.secondaryId
       }
-      if (!regCountry.test(this.newCountry.name)) {
+      if (this.newCountry.name === this.country.name && this.newCountry.secondaryId === this.country.secondaryId) {
         this.$toasted.show(
-          'Formato de nombre de pais incorrecto',
+          'No se realizaron cambios',
           {
             theme: 'toasted-primary',
             position: 'top-right',
-            duration: 10000
+            duration: 5000
           }
         )
-        this.loadingMode = false
+        this.$emit('cancel:click')
       } else {
-        if (this.newCountry.secondaryId === '') {
-          this.newCountry.secondaryId = null
+        const regCountry = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u
+        if (!regCountry.test(this.newCountry.name)) {
+          this.$toasted.show(
+            'Formato de nombre de pais incorrecto',
+            {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 10000
+            }
+          )
+          this.loadingMode = false
+        } else if (!regCountry.test(this.newCountry.secondaryId)) {
+          this.$toasted.show(
+            'Formato de identificador de pais incorrecto',
+            {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 10000
+            }
+          )
+          this.loadingMode = false
+        } else {
+          if (this.newCountry.secondaryId === '') {
+            this.newCountry.secondaryId = null
+          }
+          if (this.newCountry.name === '') {
+            this.newCountry.name = null
+          }
+          this.newCountry.id = this.country.id
+          this.$emit('update:country', this.newCountry)
         }
-        if (this.newCountry.name === '') {
-          this.newCountry.name = null
-        }
-        this.newCountry.id = this.country.id
-        this.$emit('update:country', this.newCountry)
       }
     }
   }

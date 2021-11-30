@@ -225,7 +225,7 @@ export default {
         }
       }
     },
-    addButton (type) {
+    async addButton (type) {
       let validacion = false
       let countryID = this.user.country
       if (this.user.isMain) {
@@ -258,11 +258,15 @@ export default {
           position: 'top-right',
           duration: 5000
         })
-        this.$axios
+        await this.$axios
           .$post('/api/createNewButton', body)
           .then((res) => {
-            this.tableFilter.push(res.button)
-            this.currentButtons.push(res.button)
+            console.log(res)
+            const newButton = res.Button
+            const countryOfButton = this.countries.find(c => c.id === newButton.country)
+            newButton.country = countryOfButton
+            this.tableFilter.push(newButton)
+            this.currentButtons = [...this.tableFilter]
             this.$toasted.show('Cambios guardados', {
               theme: 'toasted-primary',
               position: 'top-right',
@@ -275,16 +279,7 @@ export default {
               JSON.stringify(e.response.data.error['Errors List']) ===
               '[{"invalid name":"Name is already in use"}]'
             ) {
-              this.$toasted.show('ERROR: Nombre de local en uso', {
-                theme: 'toasted-primary',
-                position: 'top-right',
-                duration: 10000
-              })
-            } else if (
-              JSON.stringify(e.response.data.error['Errors List']) ===
-              '{"locationAddress error":"locationAddress in use"}'
-            ) {
-              this.$toasted.show('ERROR: Email en uso', {
+              this.$toasted.show('ERROR: Nombre de boton en uso', {
                 theme: 'toasted-primary',
                 position: 'top-right',
                 duration: 10000
@@ -483,7 +478,6 @@ article {
 }
 
 .bodyTableContainer {
-  overflow-y: scroll;
   width: 100%;
   height: 35rem;
 }

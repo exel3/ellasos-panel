@@ -188,9 +188,9 @@ export default {
           duration: 5000
         })
         this.$axios
-          .$post('/api/createNewAdmin', body)
+          .$post('/api/createNewuser', body)
           .then((res) => {
-            this.currentUsers.push(res.admin)
+            this.currentUsers.push(res.user)
             this.$toasted.show('Cambios guardados', {
               theme: 'toasted-primary',
               position: 'top-right',
@@ -219,7 +219,7 @@ export default {
               })
             } else {
               this.$toasted.show(
-                `Error al crear administrador: ${JSON.stringify(
+                `Error al crear user: ${JSON.stringify(
                   e.response.data.error['Errors List']
                 )}`,
                 {
@@ -235,15 +235,15 @@ export default {
     },
     updateUser (userC) {
       this.loadingMode = true
-      const AdminID = userC.id
+      const userID = userC.id
       const body = { ...userC }
       console.log(body)
       body.avatar = !body.avatar ? '' : body.avatar
       this.$axios
-        .$put(`/api/updateAdmin/${AdminID}`, body)
+        .$put(`/api/updateUser/${userID}`, body)
         .then((res) => {
-          const userUpdated = res.admin
-          userUpdated.country = this.countries.find(c => res.admin.country === c.id)
+          const userUpdated = res.user
+          userUpdated.country = this.countries.find(c => res.user.country === c.id)
           const index = this.tableFilter.findIndex(u => u.id === userUpdated.id)
           this.tableFilter[index] = userUpdated
           // this.currentUsers.push(this.newUser)
@@ -276,7 +276,7 @@ export default {
             })
           } else {
             this.$toasted.show(
-              `Error al actualizar Admin: ${JSON.stringify(
+              `Error al actualizar usuario: ${JSON.stringify(
                 e.response.data.error['Errors List']
               )}`,
               {
@@ -291,10 +291,10 @@ export default {
     },
     deleteUser () {
       this.loadingMode = true
-      const AdminID = this.userSelected.id
+      const userID = this.userSelected.id
 
       this.$axios
-        .$delete(`/api/deleteAdmin/${AdminID}`)
+        .$delete(`/api/deleteUser/${userID}`)
         .then((res) => {
           this.$toasted.show('Cambios guardados', {
             theme: 'toasted-primary',
@@ -310,7 +310,7 @@ export default {
         })
         .catch((e) => {
           this.$toasted.show(
-            `Error al borrar Admine: ${JSON.stringify(
+            `Error al borrar usuario: ${JSON.stringify(
               e.response.data.error['Errors List']
             )}`,
             {
@@ -397,7 +397,6 @@ article {
 }
 
 .bodyTableContainer {
- overflow-y:scroll;
  width: 100%;
  height: 35rem;
 }
