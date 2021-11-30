@@ -216,8 +216,17 @@ export default {
       }
     },
     updateCountry (countryC) {
+      let body = {}
       this.loadingMode = true
       const countryID = countryC.id
+      const index = this.tableFilter.findIndex(c => countryC.id === c.id)
+      const countryPrev = this.tableFilter[index]
+      if (countryPrev.name === countryC.name) {
+        body = { secondaryId:countryC.secondaryId }
+      }
+      if (countryPrev.secondaryId === countryC.secondaryId) {
+        body = { name:countryC.name}
+      }
       const body = { ...countryC }
       console.log(countryC)
       this.$axios
