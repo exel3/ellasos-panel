@@ -118,8 +118,8 @@ export default {
   async fetch () {
     await this.$axios.$get('/api/getUser').then(async (response) => {
       this.user = response
-      this.user.isMain
-        ? await this.$axios
+      if (this.user.isMain) {
+        await this.$axios
           .$get('/api/getAllCountries')
           .then((response) => {
             this.countries = response.countries
@@ -131,7 +131,8 @@ export default {
               duration: 5000
             })
           })
-        : await this.$axios.$post('/api/getAllActions/0', { country: this.user.country }).then(response => {
+      } else {
+        await this.$axios.$post('/api/getAllActions/0', { country: this.user.country }).then(response => {
           this.currentActions = response.actions
           this.tableFilter = response.actions
           this.loadingMode = false
@@ -147,6 +148,7 @@ export default {
             }
             )
           })
+      }
     })
       .catch((e) => {
         this.loadingMode = false
