@@ -149,11 +149,33 @@ export default {
     },
     addnewCountry () {
       this.loadingMode = true
+      const nameInUse = (this.tableFilter.filter(c => c.name === this.newCountry.name).length > 0)
+      const secondaryIdInUse = (this.tableFilter.filter(c => c.secondaryId === this.newCountry.secondaryId).length > 0)
       const regCountry =
     /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u
       if (!regCountry.test(this.newCountry.name)) {
         this.$toasted.show(
           'Formato de nombre de pais incorrecto',
+          {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 10000
+          }
+        )
+        this.loadingMode = false
+      } else if (nameInUse) {
+        this.$toasted.show(
+          'Nombre de pais en uso',
+          {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 10000
+          }
+        )
+        this.loadingMode = false
+      } else if (secondaryIdInUse) {
+        this.$toasted.show(
+          'Identificador de pais en uso',
           {
             theme: 'toasted-primary',
             position: 'top-right',
