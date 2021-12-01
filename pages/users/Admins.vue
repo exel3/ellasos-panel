@@ -190,6 +190,7 @@ export default {
        /^[\w-.]+@([\w-]+.)+[\w-]{2,4}$/
       const regPassword =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}/
+      const emailInUse = (this.tableFilter.filter(a => a.email === this.newUser.email).length > 0)
       if (!this.user.isMain) {
         this.countrySelected.id = this.user.country
       }
@@ -211,6 +212,13 @@ export default {
         })
       } else if (!regemail.test(this.newUser.email)) {
         this.$toasted.show('Formato de email incorrecto', {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000
+        })
+        this.loadingMode = false
+      } else if (emailInUse) {
+        this.$toasted.show('Email en uso', {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000
@@ -245,6 +253,10 @@ export default {
               position: 'top-right',
               duration: 5000
             })
+            this.newUser.namesAndSurname = ''
+            this.newUser.email = ''
+            this.newUser.password = ''
+            this.newUser.id = null
             this.loadingMode = false
           })
           .catch((e) => {
