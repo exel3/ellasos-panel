@@ -35,8 +35,8 @@ export default {
     newPassword: '',
     showDeleteModal: false
   }),
-  fetch () {
-    this.$axios
+  async fetch () {
+    await this.$axios
       .$get('/api/getUser')
       .then((response) => {
         this.user = response

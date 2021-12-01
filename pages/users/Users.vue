@@ -85,10 +85,10 @@ export default {
   async fetch () {
     await this.$axios
       .$get('/api/getAllusers')
-      .then((response) => {
+      .then(async (response) => {
         this.currentUsers = response.users
         this.tableFilter = response.users
-        this.$axios.$get('/api/getAllCountries')
+        await this.$axios.$get('/api/getAllCountries')
           .then(async (response) => {
             this.countries = response.countries
             await this.$axios.$get('/api/getUser')
