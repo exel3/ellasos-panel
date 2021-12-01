@@ -14,11 +14,11 @@
  <div class="selectContainer">
           <label for="owner">Pais</label>
         <select id="owner" class="selectOwner" name="owner"  @change="setCountrySelected($event.target.value)">
-           <option disabled selected value></option>
           <option
             v-for="country in countries"
             :key="'dropBox' + country.id"
             :value="country.name"
+            :selected="user.country.id === country.id"
           >
             {{country.name}}
           </option>

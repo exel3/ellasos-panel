@@ -185,6 +185,7 @@ export default {
     },
     addNewUser () {
       this.loadingMode = true
+      const regname = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u
       const regemail =
        /^[\w-.]+@([\w-]+.)+[\w-]{2,4}$/
       const regPassword =
@@ -202,6 +203,12 @@ export default {
           }
         )
         this.loadingMode = false
+      } else if (!regname.test(this.newUser.namesAndSurname)) {
+        this.$toasted.show('Formato de nombre y apellido incorrecto, debe contener solo letras', {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000
+        })
       } else if (!regemail.test(this.newUser.email)) {
         this.$toasted.show('Formato de email incorrecto', {
           theme: 'toasted-primary',
@@ -228,7 +235,11 @@ export default {
         this.$axios
           .$post('/api/createNewAdmin', body)
           .then((res) => {
-            this.currentUsers.push(res.admin)
+            const newAdmin = res.admin
+            const countryForAdmin = this.countries.find(c => newAdmin.country === c.id)
+            newAdmin.country = countryForAdmin
+            this.currentUsers.push(newAdmin)
+            this.tableFilter = [...this.currentUsers]
             this.$toasted.show('Cambios guardados', {
               theme: 'toasted-primary',
               position: 'top-right',
