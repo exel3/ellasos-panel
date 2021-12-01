@@ -189,6 +189,9 @@ export default {
        /^[\w-.]+@([\w-]+.)+[\w-]{2,4}$/
       const regPassword =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}/
+      if (!this.user.isMain) {
+        this.countrySelected.id = this.user.country
+      }
       if (!regPassword.test(this.newUser.password)) {
         this.$toasted.show(
           'La contraseña debe contener mínimo 8 y máximo 16 caracteres, al menos una letra mayúscula, una letra minúscula, un número, un carácter especial y no contener espacios',
@@ -206,7 +209,7 @@ export default {
           duration: 5000
         })
         this.loadingMode = false
-      } else if (!this.countrySelected) {
+      } else if (!this.countrySelected.id) {
         this.$toasted.show('Seleccione un pais', {
           theme: 'toasted-primary',
           position: 'top-right',
