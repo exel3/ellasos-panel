@@ -10,7 +10,6 @@ module.exports = { path: '/api', handler: app }
 const getToken = (req, res) => {
   const cookies = new Cookies(req, res)
   const token = cookies.get('token')
-  console.log(token)
   return token
 }
 
@@ -121,7 +120,6 @@ app.post('/createNewCountry', (req, res) => {
       }
     )
     .catch(e => {
-      console.log(e)
       res.statusCode = e.response.status
       res.json({
         error: e.response.data
@@ -137,7 +135,6 @@ app.put('/updateCountry/:countryID', (req, res) => {
       { authorization: token }
   }
   const data = { ...body }
-  console.log(data, countryID)
   axios.put(`https://ellasos.herokuapp.com/api/countries/update/${countryID}`, data, headers)
     .then(
       response => {
@@ -196,7 +193,6 @@ app.post('/createNewAdmin', (req, res) => {
       { authorization: token }
   }
   const data = { ...body }
-  console.log(data)
 
   axios.post('https://ellasos.herokuapp.com/api/admins/register', data, headers)
     .then(
@@ -205,7 +201,6 @@ app.post('/createNewAdmin', (req, res) => {
       }
     )
     .catch(e => {
-      console.log(e)
       res.statusCode = e.response.status
       res.json({
         error: e.response.data
@@ -350,7 +345,6 @@ app.delete('/deleteUser/:userID', (req, res) => {
     })
 })
 app.post('/getAllQuestions/:page', (req, res) => {
-  console.log('entro')
   const { page } = req.params
   const body = req.body
   const token = getToken(req, res)
@@ -359,7 +353,6 @@ app.post('/getAllQuestions/:page', (req, res) => {
       { authorization: token }
   }
   const data = body
-  console.log(body)
 
   axios.post(`https://ellasos.herokuapp.com/api/questions/findQuestionsByCountryWithPagination/${page}`, data, headers)
     .then(
@@ -382,17 +375,14 @@ app.post('/createNewQuestion', (req, res) => {
       { authorization: token }
   }
   const data = { ...body }
-  console.log(data)
   axios.post('https://ellasos.herokuapp.com/api/questions/create', data, headers)
     .then(
       response => {
-        console.log(response)
         res.json(response.data)
       }
     )
     .catch(e => {
       res.statusCode = e.response.status
-      console.log(e)
       res.json({
         error: e.response.data
       })
@@ -407,7 +397,6 @@ app.put('/updateQuestion/:questionID', (req, res) => {
       { authorization: token }
   }
   const data = { question, answer, country: null }
-  console.log(questionID, data)
   axios.put(`https://ellasos.herokuapp.com/api/questions/update/${questionID}`, data, headers)
     .then(
       response => {
@@ -475,13 +464,11 @@ app.post('/createNewAction', (req, res) => {
   axios.post('https://ellasos.herokuapp.com/api/actions/create', data, headers)
     .then(
       response => {
-        console.log(response)
         res.json(response.data)
       }
     )
     .catch(e => {
       res.statusCode = e.response.status
-      console.log(e)
       res.json({
         error: e.response.data
       })
@@ -496,7 +483,6 @@ app.put('/updateAction/:actionID', (req, res) => {
       { authorization: token }
   }
   const data = { name, content, country: null }
-  console.log(data)
   axios.put(`https://ellasos.herokuapp.com/api/actions/update/${actionID}`, data, headers)
     .then(
       response => {
@@ -554,7 +540,6 @@ app.post('/createNewButton', (req, res) => {
       { authorization: token }
   }
   const data = { ...body }
-  console.log(data)
   axios.post('https://ellasos.herokuapp.com/api/buttons/register', data, headers)
     .then(
       response => {
@@ -576,8 +561,6 @@ app.put('/updateButton/:buttonID', (req, res) => {
       { authorization: token }
   }
   const data = { ...req.body }
-  console.log(buttonID)
-  console.log(data)
   axios.put(`https://ellasos.herokuapp.com/api/buttons/update/${buttonID}`, data, headers)
     .then(
       response => {
