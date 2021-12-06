@@ -93,7 +93,7 @@ export default {
                   this.countries = response.countries
                 })
                 .catch((e) => {
-                  this.$toasted.show(`Error al recuperar paises: ${e}`, {
+                  this.$toasted.show(`Error al recuperar paises: ${e.response.data.msg}`, {
                     theme: 'toasted-primary',
                     position: 'top-right',
                     duration: 5000
@@ -111,7 +111,7 @@ export default {
               }
             })
             .catch((e) => {
-              this.$toasted.show(`Error al recuperar botones: ${e}`, {
+              this.$toasted.show(`Error al recuperar botones: ${e.response.data.msg}`, {
                 theme: 'toasted-primary',
                 position: 'top-right',
                 duration: 5000
@@ -126,7 +126,7 @@ export default {
               this.$fetchState.pending = false
             })
             .catch((e) => {
-              this.$toasted.show(`Error al recuperar botones: ${e}`, {
+              this.$toasted.show(`Error al recuperar botones: ${e.response.data.msg}`, {
                 theme: 'toasted-primary',
                 position: 'top-right',
                 duration: 5000
@@ -134,7 +134,7 @@ export default {
             })
       })
       .catch((e) => {
-        this.$toasted.show(`Error al recuperar el tipo de usuario: ${e}`, {
+        this.$toasted.show(`Error al recuperar el tipo de usuario: ${e.response.data.msg}`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000
@@ -157,7 +157,7 @@ export default {
         })
         .catch((e) => {
           this.loadingMode = false
-          this.$toasted.show(`Error al recuperar botones: ${e}`, {
+          this.$toasted.show(`Error al recuperar botones: ${e.response.data.msg}`, {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 5000

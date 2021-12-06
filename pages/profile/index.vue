@@ -43,7 +43,7 @@ export default {
         this.getAdmin()
       })
       .catch((e) => {
-        this.$toasted.show(`Error recuperando los datos de usuario: ${e}`, {
+        this.$toasted.show(`Error recuperando los datos de usuario: ${e.response.data.msg}`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 10000
@@ -59,7 +59,7 @@ export default {
           this.currentUser = res.admin
         })
         .catch((e) => {
-          this.$toasted.show(`Error al recuperar usuario: ${e}`, {
+          this.$toasted.show(`Error al recuperar usuario: ${e.response.data.msg}`, {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 5000
@@ -105,7 +105,7 @@ export default {
           } else {
             this.$toasted.show(
                 `Error al actualizar Admin: ${JSON.stringify(
-                  e.response.data.error['Errors List']
+                  e.response.data.msg
                 )}`,
                 {
                   theme: 'toasted-primary',

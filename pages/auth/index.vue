@@ -79,7 +79,7 @@ export default {
         .catch((error) => {
           this.loadingMode = false
           error.statusCode === 401
-            ? this.$toasted.show(`Login error: ${error}`, {
+            ? this.$toasted.show(`Login error: ${error.response.data.msg}`, {
               theme: 'toasted-primary',
               position: 'top-right',
               duration: 10000

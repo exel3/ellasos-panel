@@ -125,7 +125,7 @@ export default {
             this.countries = response.countries
           })
           .catch((e) => {
-            this.$toasted.show(`Error al recuperar paises: ${e}`, {
+            this.$toasted.show(`Error al recuperar paises: ${e.response.data.msg}`, {
               theme: 'toasted-primary',
               position: 'top-right',
               duration: 5000
@@ -154,7 +154,7 @@ export default {
         this.loadingMode = false
         this.$toasted.show(
             `Error al recuperar usuario: ${JSON.stringify(
-              e.response.data.error['Errors List']
+              e.response.data.msg
             )}`,
             {
               theme: 'toasted-primary',
@@ -181,7 +181,7 @@ export default {
         .catch((e) => {
           this.loadingMode = false
           this.$toasted.show(
-            `Error al recuperar usuario: ${e}`,
+            `Error al recuperar usuario: ${e.response.data.msg}`,
             {
               theme: 'toasted-primary',
               position: 'top-right',
@@ -231,7 +231,6 @@ export default {
         if (this.currentActions === undefined) {
           this.currentActions = []
         }
-        // this.currentActions.push(temporalActions)
         const body = temporalActions
         await this.$axios
           .$post('/api/createNewAction', body)

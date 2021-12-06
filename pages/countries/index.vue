@@ -299,7 +299,7 @@ export default {
           } else {
             this.$toasted.show(
               `Error al actualizar pais: ${JSON.stringify(
-                e.response.data.error['Errors List']
+                e.response.data.error.msg
               )}`,
               {
                 theme: 'toasted-primary',
@@ -333,7 +333,7 @@ export default {
         .catch((e) => {
           this.$toasted.show(
             `Error al borrar pais: ${JSON.stringify(
-              e.response.data.error['Errors List']
+              e.response.data.msg
             )}`,
             {
               theme: 'toasted-primary',

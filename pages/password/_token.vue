@@ -83,8 +83,9 @@ export default {
             this.isCompleteMode = true
           })
           .catch((error) => {
+            console.log(error.response.data.msg)
             this.loadingMode = false
-            this.$toasted.show(`Error en validacion: ${error}`, {
+            this.$toasted.show(`Error en validacion: ${error.response.data.msg}`, {
               theme: 'toasted-primary',
               position: 'top-right',
               duration: 10000

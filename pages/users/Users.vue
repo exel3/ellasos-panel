@@ -96,7 +96,7 @@ export default {
                 this.user = response
               })
               .catch((e) => {
-                this.$toasted.show(`Error al recuperar el usuario actual: ${e}`, {
+                this.$toasted.show(`Error al recuperar el usuario actual: ${e.response.data.msg}`, {
                   theme: 'toasted-primary',
                   position: 'top-right',
                   duration: 10000
@@ -104,7 +104,7 @@ export default {
               })
           })
           .catch((e) => {
-            this.$toasted.show(`Error al recuperar los paises: ${e}`, {
+            this.$toasted.show(`Error al recuperar los paises: ${e.response.data.msg}`, {
               theme: 'toasted-primary',
               position: 'top-right',
               duration: 10000
@@ -112,7 +112,7 @@ export default {
           })
       })
       .catch((e) => {
-        this.$toasted.show(`Error al recuperar los usuarios: ${e}`, {
+        this.$toasted.show(`Error al recuperar los usuarios: ${e.response.data.msg}`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 10000
@@ -130,7 +130,7 @@ export default {
           this.loadingMode = false
         })
         .catch((e) => {
-          this.$toasted.show(`Error al recuperar los usuarios: ${e}`, {
+          this.$toasted.show(`Error al recuperar los usuarios: ${e.response.data.msg}`, {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 10000
