@@ -65,7 +65,14 @@ export default {
   },
 
   router: {
-    middleware: 'redirects'
+    middleware: 'redirects',
+    extendRoutes (routes, resolve) {
+      routes.push({
+        name: 'custom',
+        path: '*',
+        component: resolve(__dirname, 'pages/404.vue')
+      })
+    }
   },
 
   serverMiddleware: ['~/api/index.js'],
