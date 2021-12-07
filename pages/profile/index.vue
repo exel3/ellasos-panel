@@ -6,7 +6,11 @@
         <form>
           <div>
           <label for="emailAddress">Nombre y apellidos</label>
-          <input id="emailAddress" v-model="currentUser.namesAndSurname" type="email" autocomplete="off" :disabled="loadingMode">
+          <input id="emailAddress" v-model="currentUser.namesAndSurname" type="text" autocomplete="off" :disabled="loadingMode">
+          </div>
+             <div>
+          <label for="emailAddress">Email</label>
+          <input id="emailAddress" v-model="currentUser.email" type="email" autocomplete="off" :disabled="loadingMode">
           </div>
           <div>
           <label for="contraseña">Contraseña</label>
@@ -15,7 +19,7 @@
         </form>
       </div>
       <div class="containerAddBtn">
-        <button :disabled="loadingMode" @click.prevent="updateProfile()">Editar</button>
+        <button :disabled="loadingMode" @click.prevent="user.email === currentUser.email? updateProfile() : checkEmail()">Editar</button>
       </div>
     </article>
     <DeleteModal v-if="showDeleteModal" @delete-user="deleteUser" @cancel-delete="showDeleteModal = false"/>
@@ -31,7 +35,7 @@ export default {
   data: () => ({
     loadingMode: false,
     user: {},
-    currentUser: { namesAndSurname: '', password: '', id: null },
+    currentUser: { namesAndSurname: '', email: '', id: null },
     newPassword: '',
     showDeleteModal: false
   }),
@@ -66,14 +70,44 @@ export default {
           })
         })
     },
-    updateProfile () {
+    async checkEmail () {
+      this.loadingMode = true
+      await this.$axios
+        .$get(`/api/emailExist/${this.currentUser.email}`)
+        .then(async (res) => {
+          if (!res.exist) {
+            await this.updateProfile()
+            this.$toasted.show(`Correo de verificacion enviado a ${this.current.email}, revise su bandeja de entrada.`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000
+            })
+          } else {
+            this.loadingMode = false
+            this.$toasted.show('Email en uso', {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000
+            })
+          }
+        })
+        .catch((e) => {
+          this.loadingMode = false
+          this.$toasted.show(`Error al verificar email: ${e.response.data.msg}`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000
+          })
+        })
+    },
+    async updateProfile () {
       this.loadingMode = true
       const AdminID = this.currentUser.id
       const body = {
         namesAndSurname: this.currentUser.namesAndSurname,
         password: this.newPassword !== '' ? this.newPassword : null
       }
-      this.$axios
+      await this.$axios
         .$put(`/api/updateAdmin/${AdminID}`, body)
         .then((res) => {
           this.$toasted.show('Cambios guardados', {
@@ -104,9 +138,7 @@ export default {
             })
           } else {
             this.$toasted.show(
-                `Error al actualizar Admin: ${JSON.stringify(
-                  e.response.data.msg
-                )}`,
+                `Error al actualizar Admin: ${e.response.data.msg}`,
                 {
                   theme: 'toasted-primary',
                   position: 'top-right',

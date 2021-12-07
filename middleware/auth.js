@@ -1,11 +1,7 @@
 export default async function ({ store, redirect, req, res, app }) {
   // req.url
-  let withSlash = false
-  if (app.context.route.path.startsWith('/password/')) {
-    const text = app.context.route.path.slice(10)
-    if (text.includes('/')) { withSlash = true }
-  }
-  if (!app.context.route.path.startsWith('/password/') && !withSlash) {
+
+  if (!app.context.route.path.startsWith('/password/') && !app.context.route.path.startsWith('/email/') && !app.context.route.path.startsWith('/adminemail/') && !app.context.route.path.startsWith('/adminpassword/')) {
     try {
       await app.$axios.$get(
         '/api').then(token => {

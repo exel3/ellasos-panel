@@ -233,9 +233,7 @@ export default {
               })
             } else {
               this.$toasted.show(
-                `Error al crear pais: ${JSON.stringify(
-                  e.response.data.error['Errors List']
-                )}`,
+                `Error al crear pais: ${e.response.data.msg}`,
                 {
                   theme: 'toasted-primary',
                   position: 'top-right',
@@ -298,9 +296,9 @@ export default {
             })
           } else {
             this.$toasted.show(
-              `Error al actualizar pais: ${JSON.stringify(
+              `Error al actualizar pais: ${
                 e.response.data.error.msg
-              )}`,
+              }`,
               {
                 theme: 'toasted-primary',
                 position: 'top-right',

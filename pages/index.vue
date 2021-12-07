@@ -1,9 +1,10 @@
 <template>
-  <Tutorial />
+ <p></p>
 </template>
 
 <script>
 export default {
-  name: 'MainIndex'
+  name: 'MainIndex',
+  layout: 'auth'
 }
 </script>

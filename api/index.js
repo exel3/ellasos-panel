@@ -284,6 +284,23 @@ app.post('/admin/login', (req, res) => {
       })
     })
 })
+app.get('/emailExist/:email', (req, res) => {
+  const { email } = req.params
+  const token = getToken(req, res)
+  const get = { headers: { Authorization: token } }
+  axios.get(`https://ellasos.herokuapp.com/api/admins/emailExist/${email}`, get)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
+    })
+})
 app.get('/getAllUsers', (req, res) => {
   const page = 1
   const token = getToken(req, res)
