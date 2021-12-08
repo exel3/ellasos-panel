@@ -70,14 +70,14 @@ export default {
     async validateToken () {
       if (this.password === this.passwordRe && this.password !== '') {
         this.loadingMode = true
-        const headers = {
-          headers:
-      { authorization: 'Bearer ' + this.token }
-        }
+        //   const headers = {
+        //     headers:
+        // { authorization: 'Bearer ' + this.token }
+        //   }
         const body = {
           password: this.password
         }
-        await this.$axios.$post('https://ellasos.herokuapp.com/api/admins/resetpassword/', body, headers)
+        await this.$axios.$get(`https://ellasos.herokuapp.com/api/admins/resetpassword/${'Bearer' + this.token}`, body)
           .then((result) => {
             this.loadingMode = false
             this.isCompleteMode = true
