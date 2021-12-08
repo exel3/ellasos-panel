@@ -2,7 +2,7 @@
   <div class="containerLogin">
     <div class="loginBox">
       <h1>Ella SOS</h1>
-      <form v-if="!isRegisterMode" class="loginForm">
+      <form v-if="!isForgotMode" class="loginForm">
         <p>Inicie sesión con su usuario y contraseña</p>
         <input
           v-model="userName"
@@ -35,7 +35,31 @@
           </button>
         </div>
       </form>
+        <form v-if="isForgotMode" class="loginForm">
+          <img class="backArrow" src="@/assets/icons/backArrow.svg" @click="isForgotMode = false">
+        <p>Ingrese su correo electronico:</p>
+        <input
+          v-model="emailRecovery"
+          class="loginInput"
+          type="email"
+          data-value="false"
+          autocomplete="off"
+          required="true"
+          :disabled="loadingMode"
+        />
+        <div class="containerButton">
+          <button
+            class="buttonSubmit"
+            type="submit"
+            :disabled="loadingMode"
+            @click.prevent="recoveryEmail()"
+          >
+            Enviar correo de recuperacion
+          </button>
+        </div>
+      </form>
       <div v-if="loadingMode"><p>Cargando...</p></div>
+       <div v-if="!isForgotMode" class="forgotPassword" @click="isForgotMode = true"><p>¿Has olvidado tu contraseña?</p></div>
       <span class="poweredSpan"
         ><a href="https://polluxcoop.com ">Powered by <b>Pollux</b></a></span
       >
@@ -43,27 +67,52 @@
   </div>
 </template>
 <script>
-import { mapMutations } from 'vuex'
 
 export default {
   name: 'MainLogin',
   layout: 'auth',
   data: () => ({
-    isRegisterMode: false,
+    isForgotMode: false,
     userPassword: '',
     userName: '',
+    emailRecovery: '',
     loadingMode: false
   }),
 
   methods: {
-    ...mapMutations({
-      setUser: 'authentication/setUser',
-      setClient: 'data/setClient'
-    }),
     loginWithUserNameAndEmail () {
       this.loginWithUserName()
     },
-
+    recoveryEmail () {
+      const regemail =
+       /^[\w-.]+@([\w-]+.)+[\w-]{2,4}$/
+      if (regemail.test(this.emailRecovery)) {
+        this.$axios.$post(`/api/forgotPassword/${this.emailRecovery}`)
+          .then((result) => {
+            this.loadingMode = false
+            this.isForgotMode = false
+            this.$toasted.show('Email de recuperacion enviado', {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000
+            })
+          })
+          .catch((error) => {
+            this.loadingMode = false
+            this.$toasted.show(`Error: ${error}`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 10000
+            })
+          })
+      } else {
+        this.$toasted.show('Formato de email incorrecto', {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000
+        })
+      }
+    },
     loginWithUserName () {
       this.loadingMode = true
       const post = {
@@ -98,6 +147,26 @@ export default {
 }
 </script>
 <style scoped>
+.backArrow {
+  position: absolute;
+  cursor: pointer;
+  top:1.5rem;
+  left:1.5rem;
+}
+.forgotPassword {
+  padding-top: 1rem;
+      border-radius: 4px;
+    display: inline-block;
+    font-weight: 500;
+    letter-spacing: .25px;
+    outline: 0;
+    position: relative;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: inherit;
+    text-align: left;
+    border: 0;
+}
 .colorSwitch {
   position: absolute;
   left: calc(100% - 2rem);

@@ -293,6 +293,7 @@ export default {
             this.loadingMode = false
           })
       }
+      this.loadingMode = false
     },
     updateUser (userC) {
       this.loadingMode = true

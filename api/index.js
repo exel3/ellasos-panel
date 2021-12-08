@@ -301,6 +301,46 @@ app.get('/emailExist/:email', (req, res) => {
       })
     })
 })
+app.post('/changeEmail/:id', (req, res) => {
+  const { id } = req.params
+  const body = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = { ...body }
+  console.log(token)
+  console.log(id)
+  console.log(data)
+  axios.post(`https://ellasos.herokuapp.com/api/admins/changeEmail/${id}`, data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
+    })
+})
+app.post('/forgotPassword/:email', (req, res) => {
+  const { email } = req.params
+  axios.post(`https://ellasos.herokuapp.com/api/admins/forgotpassword/${email}`)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
+    })
+})
 app.get('/getAllUsers', (req, res) => {
   const page = 1
   const token = getToken(req, res)

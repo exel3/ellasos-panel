@@ -109,7 +109,27 @@ export default {
       }
       await this.$axios
         .$put(`/api/updateAdmin/${AdminID}`, body)
-        .then((res) => {
+        .then(async (res) => {
+          if (this.user.email !== this.currentUser.password) {
+            const body = { email: this.currentUser.email }
+            await this.$axios
+              .$post(`/api/changeEmail/${this.currentUser.id}`, body)
+              .then(async (res) => {
+                this.$toasted.show(`Correo de verificacion enviado a ${this.currentUser.email}, revise su bandeja de entrada.`, {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000
+                })
+              })
+              .catch((e) => {
+                this.loadingMode = false
+                this.$toasted.show(`Error al actualizar email: ${e}`, {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000
+                })
+              })
+          }
           this.$toasted.show('Cambios guardados', {
             theme: 'toasted-primary',
             position: 'top-right',
