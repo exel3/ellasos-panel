@@ -82,7 +82,7 @@
     </article>
     <DeleteModal
       v-if="showDeleteModal"
-      @delete:local="deleteQuestion"
+      @delete:local="deleteQuestion(); showDeleteModal = false"
       @cancel:delete="showDeleteModal = false"
     />
   </section>
@@ -229,12 +229,12 @@ export default {
         if (this.currentQuestions === undefined) {
           this.currentQuestions = []
         }
-        // this.currentQuestions.push(temporalQuestion)
         const body = temporalQuestion
         await this.$axios
           .$post('/api/createNewQuestion', body)
           .then((res) => {
             this.tableFilter.push(res.question)
+            this.currentQuestions.push(res.question)
             this.$toasted.show('Cambios guardados', {
               theme: 'toasted-primary',
               position: 'top-right',

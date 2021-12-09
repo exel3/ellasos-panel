@@ -236,6 +236,7 @@ export default {
           .$post('/api/createNewAction', body)
           .then((res) => {
             this.tableFilter.push(res.action)
+            this.currentActions.push(res.action)
             this.$toasted.show('Cambios guardados', {
               theme: 'toasted-primary',
               position: 'top-right',

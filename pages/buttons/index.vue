@@ -101,14 +101,6 @@ export default {
                 })
               this.currentButtons = response.buttons
               this.tableFilter = response.buttons
-              if (!this.user.isMain) {
-                this.policeNum = [...response.buttons].find(n => n.name === 'police')
-                this.emergencyNum = [...response.buttons].find(n => n.name === 'emergency')
-                if (!this.policeNum) { this.policeNum = {} }
-                if (!this.emergencyNum) { this.emergencyNum = {} }
-                this.policeNumInitial = { ...this.policeNum }
-                this.emergencyNumInitial = { ...this.emergencyNum }
-              }
             })
             .catch((e) => {
               this.$toasted.show(`Error al recuperar botones: ${e.response.data.msg}`, {
@@ -124,6 +116,14 @@ export default {
               this.tableFilter = response.buttons
               this.loadingMode = false
               this.$fetchState.pending = false
+              if (!this.user.isMain) {
+                this.policeNum = [...response.buttons].find(n => n.name === 'police')
+                this.emergencyNum = [...response.buttons].find(n => n.name === 'emergency')
+                if (!this.policeNum) { this.policeNum = {} }
+                if (!this.emergencyNum) { this.emergencyNum = {} }
+                this.policeNumInitial = { ...this.policeNum }
+                this.emergencyNumInitial = { ...this.emergencyNum }
+              }
             })
             .catch((e) => {
               this.$toasted.show(`Error al recuperar botones: ${e.response.data.msg}`, {
@@ -222,6 +222,19 @@ export default {
           } else {
             return true
           }
+        }
+      } else {
+        const regTel =
+       /^\d{3,}$/
+        if (!regTel.test(tel)) {
+          this.$toasted.show('Numero de telefono incorrecto', {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000
+          })
+          return false
+        } else {
+          return true
         }
       }
     },

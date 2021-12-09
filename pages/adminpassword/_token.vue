@@ -77,7 +77,7 @@ export default {
         const body = {
           password: this.password
         }
-        await this.$axios.$get(`https://ellasos.herokuapp.com/api/admins/resetpassword/${'Bearer' + this.token}`, body)
+        await this.$axios.$post(`https://ellasos.herokuapp.com/api/admins/resetpassword/${'Bearer ' + this.token}`, body)
           .then((result) => {
             this.loadingMode = false
             this.isCompleteMode = true
