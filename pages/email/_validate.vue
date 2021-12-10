@@ -21,7 +21,9 @@ export default {
     isErrorMode: true
   }),
   async fetch () {
-    this.token = this.$router.currentRoute.params.validate
+    // this.token = this.$router.currentRoute.params.validate
+    const path = this.$route.fullPath
+    this.token = path.replace('/email/', '')
     await this.validateToken()
   },
   methods: {
