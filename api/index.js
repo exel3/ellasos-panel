@@ -310,9 +310,6 @@ app.post('/changeEmail/:id', (req, res) => {
       { authorization: token }
   }
   const data = { ...body }
-  console.log(token)
-  console.log(id)
-  console.log(data)
   axios.post(`https://ellasos.herokuapp.com/api/admins/changeEmail/${id}`, data, headers)
     .then(
       response => {

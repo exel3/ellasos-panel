@@ -21,12 +21,12 @@
           </div>
           <div>
           <label for="contraseña">Telefono</label>
-          <input id="contraseña" v-model="emergencyNum.phone" type="text"  :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="emergencyNumInitial.phone? updateButton('emergency') : addButton('emergency')">
+          <input id="contraseña" v-model="emergencyNum.phones[0].phoneNumber" type="text"  :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="!emergencyNumInitial? updateButton('emergency') : addButton('emergency')">
           </div>
         </form>
       </div>
       <div class="containerAddBtn">
-        <button :disabled="loadingMode" @click.prevent="emergencyNumInitial.phone? updateButton('emergency') : addButton('emergency')">{{emergencyNumInitial.phone? 'Modificar' : 'Agregar'}}</button>
+        <button :disabled="loadingMode" @click.prevent="!emergencyNumInitial? updateButton('emergency') : addButton('emergency')">{{!emergencyNumInitial? 'Modificar' : 'Agregar'}}</button>
       </div>
     </article>
       <article class="newlocal">
@@ -39,12 +39,12 @@
           </div>
           <div>
           <label for="contraseña">Telefono</label>
-          <input id="contraseña" v-model="policeNum.phone" type="text"  :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="policeNumInitial.phone? updateButton('police') : addButton('police')">
+          <input id="contraseña" v-model="policeNum.phones[0].phoneNumber" type="text"  :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="!policeNumInitial? updateButton('police') : addButton('police')">
           </div>
         </form>
       </div>
       <div class="containerAddBtn">
-        <button :disabled="loadingMode" @click.prevent="policeNumInitial.phone? updateButton('police') : addButton('police')">{{policeNumInitial.phone? 'Modificar' : 'Agregar'}}</button>
+        <button :disabled="loadingMode" @click.prevent="!policeNumInitial? updateButton('police') : addButton('police')">{{!policeNumInitial? 'Modificar' : 'Agregar'}}</button>
       </div>
     </article>
     <EditModal v-if="showEditModal" :local="buttonSelected" :countries="countries" :user="user" @click:cancel="showEditModal=false" @update:local="updateButton($event); showEditModal=false" @cancel:click="showEditModal=false"  />
@@ -68,10 +68,10 @@ export default {
     countrySelected: {},
     currentButtons: [],
     buttonSelected: {},
-    emergencyNum: {},
-    emergencyNumInitial: {},
-    policeNum: {},
-    policeNumInitial: {},
+    emergencyNum: { phones: [{ phoneNumber: '' }] },
+    emergencyNumInitial: false,
+    policeNum: { phones: [{ phoneNumber: '' }] },
+    policeNumInitial: false,
     showDeleteModal: false,
     showEditModal: false,
     searchValue: '',
@@ -119,10 +119,8 @@ export default {
               if (!this.user.isMain) {
                 this.policeNum = [...response.buttons].find(n => n.name === 'police')
                 this.emergencyNum = [...response.buttons].find(n => n.name === 'emergency')
-                if (!this.policeNum) { this.policeNum = {} }
-                if (!this.emergencyNum) { this.emergencyNum = {} }
-                this.policeNumInitial = { ...this.policeNum }
-                this.emergencyNumInitial = { ...this.emergencyNum }
+                if (!this.policeNum) { this.policeNum = { phones: [{ phoneNumber: '' }] }; this.policeNumInitial = true }
+                if (!this.emergencyNum) { this.emergencyNum = { phones: [{ phoneNumber: '' }] }; this.emergencyNumInitial = true }
               }
             })
             .catch((e) => {
@@ -195,10 +193,8 @@ export default {
       const buttonsByCounty = this.currentButtons.filter(b => b.country.id === this.countrySelected.id)
       this.policeNum = [...buttonsByCounty].find(n => n.name === 'police')
       this.emergencyNum = [...buttonsByCounty].find(n => n.name === 'emergency')
-      if (!this.policeNum) { this.policeNum = {} }
-      if (!this.emergencyNum) { this.emergencyNum = {} }
-      this.policeNumInitial = { ...this.policeNum }
-      this.emergencyNumInitial = { ...this.emergencyNum }
+      if (!this.policeNum) { this.policeNum = { phones: [{ phoneNumber: '' }] }; this.policeNumInitial = true }
+      if (!this.emergencyNum) { this.emergencyNum = { phones: [{ phoneNumber: '' }] }; this.emergencyNumInitial = true }
     },
     validateNum (tel) {
       if (this.user.isMain) {
@@ -245,23 +241,23 @@ export default {
         countryID = this.countrySelected.id
       }
       if (type === 'police') {
-        validacion = this.validateNum(this.policeNum.phone)
+        validacion = this.validateNum(this.policeNum.phones[0].phoneNumber)
       } else {
-        validacion = this.validateNum(this.emergencyNum.phone)
+        validacion = this.validateNum(this.emergencyNum.phones[0].phoneNumber)
       }
       if (validacion) {
         let body = {}
         if (type === 'police') {
           body = {
             name: 'police',
-            phone: this.policeNum.phone,
+            phone: [this.policeNum.phones[0].phoneNumber],
             country: countryID,
             message: 'Emergencia policial'
           }
         } else {
           body = {
             name: 'emergency',
-            phone: this.emergencyNum.phone,
+            phone: [this.emergencyNum.phones[0].phoneNumber],
             country: countryID,
             message: 'Emergencia medica'
           }
@@ -274,8 +270,7 @@ export default {
         await this.$axios
           .$post('/api/createNewButton', body)
           .then((res) => {
-            console.log(res)
-            const newButton = res.Button
+            const newButton = res.button
             const countryOfButton = this.countries.find(c => c.id === newButton.country)
             newButton.country = countryOfButton
             this.tableFilter.push(newButton)
@@ -299,9 +294,7 @@ export default {
               })
             } else {
               this.$toasted.show(
-                `Error al crear boton: ${JSON.stringify(
-                  e.response.data.error['Errors List']
-                )}`,
+                `Error al crear boton: ${e}`,
                 {
                   theme: 'toasted-primary',
                   position: 'top-right',
@@ -316,9 +309,9 @@ export default {
     updateButton (type) {
       let validacion = false
       if (type === 'police') {
-        validacion = this.validateNum(this.policeNum.phone)
+        validacion = this.validateNum(this.policeNum.phones[0].phoneNumber)
       } else {
-        validacion = this.validateNum(this.emergencyNum.phone)
+        validacion = this.validateNum(this.emergencyNum.phones[0].phoneNumber)
       }
       if (validacion) {
         this.loadingMode = true
@@ -326,18 +319,19 @@ export default {
         let buttonID = ''
         if (type === 'police') {
           body = {
-            phone: this.policeNum.phone
+            phone: [this.policeNum.phones[0].phoneNumber]
           }
           buttonID = this.policeNum.id
         } else {
           body = {
-            phone: this.emergencyNum.phone
+            phone: [this.emergencyNum.phones[0].phoneNumber]
           }
           buttonID = this.emergencyNum.id
         }
         this.$axios
           .$put(`/api/updateButton/${buttonID}`, body)
           .then((res) => {
+            console.log(res)
             this.$toasted.show('Cambios guardados', {
               theme: 'toasted-primary',
               position: 'top-right',
@@ -346,7 +340,7 @@ export default {
             const indexT = this.currentButtons.findIndex(
               (t) => t.id === res.button.id
             )
-            this.tableFilter[indexT].phone = res.button.phone
+            this.tableFilter[indexT].phones = res.button.phones
             this.currentButtons = this.tableFilter
             this.loadingMode = false
           })
@@ -433,7 +427,7 @@ export default {
     padding: 0.5rem 0.1rem;
   }
   .newlocal {
-    max-height: 30rem;
+    max-height: 35rem;
   }
   .titleCard {
     display: grid;
@@ -459,6 +453,9 @@ export default {
     padding: 0.5rem;
   }
 
+.newlocal {
+  overflow: hidden;
+}
   .titleCard {
     display: grid;
     grid-auto-flow: column;
@@ -627,9 +624,6 @@ td {
   font-size: 0.875rem;
   text-transform: none;
   color: #525f7f;
-}
-.newlocal {
-  overflow: hidden;
 }
 .searchContainer {
   height: 100%;
