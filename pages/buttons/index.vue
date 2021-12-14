@@ -270,6 +270,13 @@ export default {
         await this.$axios
           .$post('/api/createNewButton', body)
           .then((res) => {
+            if (type === 'police') {
+              this.policeNumInitial = false
+              this.policeNum = res.button
+            } else if (type === 'emergency') {
+              this.emergencyNumInitial = false
+              this.emergencyNum = res.button
+            }
             const newButton = res.button
             const countryOfButton = this.countries.find(c => c.id === newButton.country)
             newButton.country = countryOfButton
@@ -306,7 +313,7 @@ export default {
           })
       }
     },
-    updateButton (type) {
+    async updateButton (type) {
       let validacion = false
       if (type === 'police') {
         validacion = this.validateNum(this.policeNum.phones[0].phoneNumber)
@@ -318,20 +325,26 @@ export default {
         let body = {}
         let buttonID = ''
         if (type === 'police') {
+          this.policeNumInitial = false
           body = {
             phone: [this.policeNum.phones[0].phoneNumber]
           }
           buttonID = this.policeNum.id
         } else {
+          this.emergencyNumInitial = false
           body = {
             phone: [this.emergencyNum.phones[0].phoneNumber]
           }
           buttonID = this.emergencyNum.id
         }
-        this.$axios
+        await this.$axios
           .$put(`/api/updateButton/${buttonID}`, body)
           .then((res) => {
-            console.log(res)
+            if (type === 'police') {
+              this.policeNumInitial = false
+            } else if (type === 'emergency') {
+              this.emergencyNumInitial = false
+            }
             this.$toasted.show('Cambios guardados', {
               theme: 'toasted-primary',
               position: 'top-right',

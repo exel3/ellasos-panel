@@ -35,7 +35,6 @@ export default {
           this.isErrorMode = false
         })
         .catch((error) => {
-          console.log(error.response.data.msg)
           this.loadingMode = false
           this.isErrorMode = true
           this.$toasted.show(`Error en validacion: ${error.response.data.msg}`, {
