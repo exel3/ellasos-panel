@@ -7,16 +7,17 @@ export default {
   props: {
     valueinput: {
       type: String,
-      default: ""
+      default: ''
     }
   },
   data: () => ({
-    borderColor:'transparent',
+    borderColor: 'transparent',
     inputBase: 'inputBase'
   }),
-  methods:{
-    getBorderColor(currentValue){
-     currentValue===''? this.inputBase ='inputBaseAlert' :   this.inputBase = 'inputBase'}
+  methods: {
+    getBorderColor (currentValue) {
+      currentValue === '' ? this.inputBase = 'inputBaseAlert' : this.inputBase = 'inputBase'
+    }
   }
 }
 </script>

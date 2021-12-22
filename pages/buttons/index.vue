@@ -16,8 +16,8 @@
       <div class="contentCard">
         <form>
           <div>
-          <label for="locationAddress">Detalle</label>
-          <input id="locationAddress" type="locationAddress" :disabled="true" autocomplete="off" placeholder="Contacta emergencia medica">
+          <label for="message">Detalle</label>
+          <input id="message" type="text" autocomplete="off" v-model="emergencyNum.message">
           </div>
           <div>
           <label for="contraseña">Telefono</label>
@@ -34,8 +34,8 @@
       <div class="contentCard">
         <form>
           <div>
-          <label for="locationAddress">Detalle</label>
-          <input id="locationAddress" type="locationAddress" :disabled="true" autocomplete="off" placeholder="Contacta policia">
+          <label for="message">Detalle</label>
+          <input id="message" type="text" autocomplete="off"  v-model="policeNum.message">
           </div>
           <div>
           <label for="contraseña">Telefono</label>
@@ -68,9 +68,9 @@ export default {
     countrySelected: {},
     currentButtons: [],
     buttonSelected: {},
-    emergencyNum: { phones: [{ phoneNumber: '' }] },
+    emergencyNum: { phones: [{ phoneNumber: '' }], message: '' },
     emergencyNumInitial: false,
-    policeNum: { phones: [{ phoneNumber: '' }] },
+    policeNum: { phones: [{ phoneNumber: '' }], message: '' },
     policeNumInitial: false,
     showDeleteModal: false,
     showEditModal: false,
@@ -119,8 +119,8 @@ export default {
               if (!this.user.isMain) {
                 this.policeNum = [...response.buttons].find(n => n.name === 'police')
                 this.emergencyNum = [...response.buttons].find(n => n.name === 'emergency')
-                if (!this.policeNum) { this.policeNum = { phones: [{ phoneNumber: '' }] }; this.policeNumInitial = true }
-                if (!this.emergencyNum) { this.emergencyNum = { phones: [{ phoneNumber: '' }] }; this.emergencyNumInitial = true }
+                if (!this.policeNum) { this.policeNum = { phones: [{ phoneNumber: '' }], message: '' }; this.policeNumInitial = true }
+                if (!this.emergencyNum) { this.emergencyNum = { phones: [{ phoneNumber: '' }], message: '' }; this.emergencyNumInitial = true }
               }
             })
             .catch((e) => {
@@ -252,14 +252,14 @@ export default {
             name: 'police',
             phone: [this.policeNum.phones[0].phoneNumber],
             country: countryID,
-            message: 'Emergencia policial'
+            message: this.policeNum.message
           }
         } else {
           body = {
             name: 'emergency',
             phone: [this.emergencyNum.phones[0].phoneNumber],
             country: countryID,
-            message: 'Emergencia medica'
+            message: this.emergencyNum.message
           }
         }
         this.$toasted.show('Guardando cambios..', {
@@ -327,13 +327,15 @@ export default {
         if (type === 'police') {
           this.policeNumInitial = false
           body = {
-            phone: [this.policeNum.phones[0].phoneNumber]
+            phone: [this.policeNum.phones[0].phoneNumber],
+            message: this.policeNum.message
           }
           buttonID = this.policeNum.id
         } else {
           this.emergencyNumInitial = false
           body = {
-            phone: [this.emergencyNum.phones[0].phoneNumber]
+            phone: [this.emergencyNum.phones[0].phoneNumber],
+            message: this.emergencyNum.message
           }
           buttonID = this.emergencyNum.id
         }
@@ -369,7 +371,7 @@ export default {
               })
             } else if (
               JSON.stringify(e.response.data.error['Errors List']) ===
-            '{"locationAddress error":"locationAddress in use"}'
+            '{"message error":"message in use"}'
             ) {
               this.$toasted.show('ERROR: Email en uso', {
                 theme: 'toasted-primary',

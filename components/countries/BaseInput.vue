@@ -1,5 +1,5 @@
 <template>
-  <input :value="valueinput" :class="inputBase" :disabled="status" @input="$emit('input', $event.target.value)">
+  <input :value="valueinput" :class="inputBase" @input="$emit('input', $event.target.value)">
 </template>
 <script>
 export default {
@@ -8,10 +8,6 @@ export default {
     valueinput: {
       type: String,
       default: ''
-    },
-    status: {
-      type: Boolean,
-      required: true
     }
   },
   data: () => ({
