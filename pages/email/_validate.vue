@@ -6,7 +6,7 @@
     <div v-else class="loginBox">
       <img v-if="!isErrorMode" class="imgOk" src="@/assets/images/ok.png">
         <p v-if="!isErrorMode" class="title">Email validado correctamente</p>
-        <p v-else class="title" style="color:red">Email no validado</p>
+        <p v-else class="title" style="color:red">{{errorMessage}}</p>
     </div>
   </div>
 </template>
@@ -18,7 +18,8 @@ export default {
   data: () => ({
     loadingMode: false,
     token: '',
-    isErrorMode: true
+    isErrorMode: true,
+    errorMessage: 'Error al validad email'
   }),
   async fetch () {
     // this.token = this.$router.currentRoute.params.validate
@@ -36,6 +37,11 @@ export default {
         })
         .catch((error) => {
           this.loadingMode = false
+          if (error.response.data.msg === 'This email already exists.') {
+            this.errorMessage = 'Este correo ya fué validado anteriormente.'
+          } else {
+            this.errorMessage = 'Error al validad email'
+          }
           this.isErrorMode = true
           this.$toasted.show(`Error en validacion: ${error.response.data.msg}`, {
             theme: 'toasted-primary',
