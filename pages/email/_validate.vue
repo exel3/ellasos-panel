@@ -34,10 +34,8 @@ export default {
         .then((result) => {
           this.loadingMode = false
           this.isErrorMode = false
-          console.log('ok')
         })
         .catch((error) => {
-          console.log(error.response.data.msg)
           this.loadingMode = false
           if (error.response.data.msg === 'This email already exists.') {
             this.errorMessage = 'Este correo ya fué validado anteriormente.'
