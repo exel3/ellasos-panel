@@ -34,22 +34,19 @@ export default {
         .then((result) => {
           this.loadingMode = false
           this.isErrorMode = false
+          console.log('ok')
         })
         .catch((error) => {
-          this.loadingMode = false
           console.log(error.response.data.msg)
-          console.log(error)
+          this.loadingMode = false
           if (error.response.data.msg === 'This email already exists.') {
             this.errorMessage = 'Este correo ya fué validado anteriormente.'
+          } else if (error.response.data.msg === 'jwt expired') {
+            this.errorMessage = 'Codigo de validacion expirado.'
           } else {
             this.errorMessage = 'Error al validar email'
           }
           this.isErrorMode = true
-          this.$toasted.show(`Error en validacion: ${error.response.data.msg}`, {
-            theme: 'toasted-primary',
-            position: 'top-right',
-            duration: 10000
-          })
         })
     }
   }
