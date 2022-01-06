@@ -19,7 +19,7 @@ export default {
     loadingMode: false,
     token: '',
     isErrorMode: true,
-    errorMessage: 'Error al validad email'
+    errorMessage: 'Error al validar email'
   }),
   async fetch () {
     // this.token = this.$router.currentRoute.params.validate
@@ -37,10 +37,12 @@ export default {
         })
         .catch((error) => {
           this.loadingMode = false
+          console.log(error.response.data.msg)
+          console.log(error)
           if (error.response.data.msg === 'This email already exists.') {
             this.errorMessage = 'Este correo ya fué validado anteriormente.'
           } else {
-            this.errorMessage = 'Error al validad email'
+            this.errorMessage = 'Error al validar email'
           }
           this.isErrorMode = true
           this.$toasted.show(`Error en validacion: ${error.response.data.msg}`, {
