@@ -9,7 +9,7 @@ export default {
   props: {
     backcolor: {
       type: String,
-      default: 'transparent',
+      default: 'transparent'
     },
     bordercolor: {
       type: String,
@@ -25,7 +25,7 @@ export default {
     }
   },
   methods: {
-  },
+  }
 }
 </script>
 <style scoped>
