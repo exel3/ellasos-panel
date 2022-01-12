@@ -41,7 +41,7 @@ export default {
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
-    baseURL: 'https://ellasos-panel.vercel.app'
+    baseURL: 'https://ellasos-panel-ten.vercel.app'
   },
 
   // PWA module configuration: https://go.nuxtjs.dev/pwa
